@@ -141,3 +141,6 @@ _build/
 mydask.png
 dataframes/data
 .idea/
+
+# VSCode
+.vscode/
