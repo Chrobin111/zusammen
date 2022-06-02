@@ -14,7 +14,7 @@ def find_stan_files(directory):
         for filename in filenames:
 
             if ".stan" in filename:
-            
+
                 paths.append(os.path.join("..", path, filename))
 
     return paths

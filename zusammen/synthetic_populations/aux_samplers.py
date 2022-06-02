@@ -21,9 +21,7 @@ class TDecaySampler(popsynth.AuxiliarySampler):
         trise = self._secondary_samplers["trise"].true_values
 
         self._true_values = (
-            1.0
-            / 50.0
-            * (10 * t90 + trise + np.sqrt(trise) * np.sqrt(20 * t90 + trise))
+            1.0 / 50.0 * (10 * t90 + trise + np.sqrt(trise) * np.sqrt(20 * t90 + trise))
         )
 
 

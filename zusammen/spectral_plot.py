@@ -39,9 +39,7 @@ def display_posterior_model_counts(
     show_residuals = False
 
     if axes != None:
-        residual_plot = ResidualPlot(
-            show_residuals=show_residuals, model_subplot=axes
-        )
+        residual_plot = ResidualPlot(show_residuals=show_residuals, model_subplot=axes)
     else:
         residual_plot = ResidualPlot(show_residuals=show_residuals)
         axes = residual_plot.data_axis

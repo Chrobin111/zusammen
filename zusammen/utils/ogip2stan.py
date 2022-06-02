@@ -216,9 +216,7 @@ class GRBDatum(object):
         )
 
     @classmethod
-    def from_ogip(
-        cls, name, obs_file, bkg_file, rsp, selection, spectrum_number=1
-    ):
+    def from_ogip(cls, name, obs_file, bkg_file, rsp, selection, spectrum_number=1):
         """
         Create the base data from FITS files.
 
@@ -314,12 +312,8 @@ class GRBDatum(object):
             compression="lzf",
             shuffle=True,
         )
-        f.create_dataset(
-            "ebounds", data=self._ebounds, compression="lzf", shuffle=True
-        )
-        f.create_dataset(
-            "mask", data=self._mask, compression="lzf", shuffle=True
-        )
+        f.create_dataset("ebounds", data=self._ebounds, compression="lzf", shuffle=True)
+        f.create_dataset("mask", data=self._mask, compression="lzf", shuffle=True)
 
         if is_file:
 
@@ -1046,9 +1040,7 @@ class DataSet(object):
         n_echan = np.zeros((self._n_intervals, self._max_n_detectors))
         n_chan = np.zeros((self._n_intervals, self._max_n_detectors))
 
-        masks = np.zeros(
-            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
-        )
+        masks = np.zeros((self._n_intervals, self._max_n_detectors, self._max_n_chans))
         n_channels_used = np.zeros((self._n_intervals, self._max_n_detectors))
         grb_id = np.zeros(self._n_intervals)
         ebounds_lo = np.zeros(
@@ -1103,17 +1095,13 @@ class DataSet(object):
                     n_bkg_zero[i, j] = datum.n_bkg_zero
                     n_bkg_nonzero[i, j] = datum.n_bkg_nonzero
 
-                    background_errors[
-                        i, j, : datum.n_chans
-                    ] = datum.background_error
+                    background_errors[i, j, : datum.n_chans] = datum.background_error
 
                     # responses[
                     #     i, j, : datum.n_echans, : datum.n_chans
                     # ] = datum.response_transpose
 
-                    responses[
-                        i, j, : datum.n_chans, : datum.n_echans
-                    ] = datum.response
+                    responses[i, j, : datum.n_chans, : datum.n_echans] = datum.response
 
                     this_mask = datum.mask_stan
 
