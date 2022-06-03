@@ -15,10 +15,10 @@ data {
 
   int grb_id[N_intervals];
   int N_grbs;
-  
+
   vector[max_n_echan] ebounds_hi[N_intervals, max(N_dets)];
   vector[max_n_echan] ebounds_lo[N_intervals, max(N_dets)];
-  
+
 
 
   vector[max_n_chan] observed_counts[N_intervals, max(N_dets)];
@@ -29,13 +29,13 @@ data {
   int idx_background_nonzero[N_intervals, max(N_dets), max_n_chan];
   int N_bkg_zero[N_intervals,max(N_dets)];
   int N_bkg_nonzero[N_intervals,max(N_dets)];
-  
+
   real exposure[N_intervals, max(N_dets)];
 
   matrix[max_n_echan, max_n_chan] response[N_intervals, max(N_dets)];
 
 
-  
+
   int mask[N_intervals, max(N_dets), max_n_chan];
   int N_channels_used[N_intervals,max(N_dets)];
 
@@ -46,12 +46,12 @@ data {
   int N_gen_spectra;
   vector[N_gen_spectra] model_energy;
 
-  
-  
+
+
 }
 
 transformed data {
-  vector[N_intervals] dl2 = square(dl); 
+  vector[N_intervals] dl2 = square(dl);
 
   real emin = 10.;
   real emax = 1E6;
@@ -61,19 +61,19 @@ transformed data {
 
   vector out = csr_extract_w( response[1,1] );
 
-  
-      
+
+
   /* vector[N_intervals] emin; */
   /* vector[N_intervals] emax; */
 
   /* emin = 10. ./ (1+z); */
   /* emax = 1.E5 ./ (1+z); */
-  
 
-  
-}
 
 
 }
 
-  
+
+}
+
+

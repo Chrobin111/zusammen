@@ -11,22 +11,22 @@ real [] band_precalculation(real flux, real alpha, real epeak, real emin, real e
   real ec;
   real intflux;
   real norm;
-  
+
   real erg2keV = 6.24151e8;
-  
-    
+
+
   if (alpha !=-2.) {
-    ec = epeak / (2. + alpha); 
+    ec = epeak / (2. + alpha);
   }
   else {
-    ec = epeak/.0001; 
+    ec = epeak/.0001;
   }
 
-    
+
   intflux = ggrb_int_cpl(alpha, ec, emin, emax);
- 
-    
-  
+
+
+
   norm = flux * erg2keV / intflux;
 
   return {norm, ec};
@@ -34,19 +34,19 @@ real [] band_precalculation(real flux, real alpha, real epeak, real emin, real e
 
 // vector differential_flux( vector energy, real norm , real ec, real alpha) {
 
-//   int N = num_elements(energy); 
+//   int N = num_elements(energy);
 //   vector[N] out;
 //   vector[N] ratio;
-       
+
 //   ratio = energy/ec;
-    
+
 //   for (n in 1:N) {
-      
+
 
 //     out[n] = norm * pow(ratio[n], alpha) * exp(-ratio[n]);
 //   }
-    
+
 //   return out;
-	  
+
 // }
 
