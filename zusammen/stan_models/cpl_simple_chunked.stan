@@ -1,3 +1,4 @@
+// TODO: Understand after cpl
 functions {
 #include cpl.stan
 #include pgstat.stan
@@ -12,7 +13,7 @@ data {
   int max_n_echan;
   int max_n_chan;
 
-  array[N_intervals] int<lower=0> N_dets; // number of detectors poer data type
+  array[N_intervals] int<lower=0> N_dets; // number of detectors per data type
   array[N_intervals, max(N_dets)] int<lower=0> N_chan; // number of channels in each detector
   array[N_intervals,  max(N_dets)] int<lower=0> N_echan; // number of energy side channels in each detector
 
@@ -21,7 +22,6 @@ data {
 
   array[N_intervals, max(N_dets)] vector[max_n_echan] ebounds_hi;
   array[N_intervals, max(N_dets)] vector[max_n_echan] ebounds_lo;
-
 
 
   array[N_intervals, max(N_dets)] vector[max_n_chan] observed_counts;
@@ -38,7 +38,6 @@ data {
   array[N_intervals, max(N_dets)] matrix[max_n_chan, max_n_echan] response;
 
 
-
   array[N_intervals, max(N_dets), max_n_chan] int mask;
   array[N_intervals,max(N_dets)] int N_channels_used;
 
@@ -52,29 +51,30 @@ data {
   /* int N_correlation; */
   /* vector[N_correlation] model_correlation; */
 
-
 }
 
+
+
 transformed data {
+  // TODO: ???
   real x_r[0];
   int x_i[0];
 
-  real kev2erg = 1.6021766e-9;
-  real erg2kev = 6.24151e8;
+  real kev2erg = 1.6021766e-9; // keV to erg conversion
+  real erg2kev = 6.24151e8; // erg to keV conversion
 
-  vector[N_intervals] dl2 = square(dl);
-  int N_total_channels = 0;
-  real emin = 10.;
-  real emax = 1E4;
+  vector[N_intervals] dl2 = square(dl); // dl squared
+  int N_total_channels = 0; // number of channels
+  real emin = 10.; // minimum energy
+  real emax = 1E4; // maximum energy
 
-  array[N_intervals, max(N_dets)] vector[max_n_echan] ebounds_add;
-  array[N_intervals, max(N_dets)] vector[max_n_echan] ebounds_half;
+  array[N_intervals, max(N_dets)] vector[max_n_echan] ebounds_add; // TODO: why over 6
+  array[N_intervals, max(N_dets)] vector[max_n_echan] ebounds_half; // center of enery bounds
 
   array[N_intervals] int all_N;
 
 
   // precalculation of energy bounds
-
   for (n in 1:N_intervals) {
 
     all_N[n] = n;
@@ -104,12 +104,11 @@ parameters {
   real log_energy_flux_mu_raw;
   real<lower=0> log_energy_flux_sigma;
 
-
   vector[N_intervals] log_energy_flux_raw; // raw energy flux norm
 
-
-
 }
+
+
 
 transformed parameters {
 
@@ -121,7 +120,7 @@ transformed parameters {
   vector[N_intervals] K;
 
 
-  log_energy_flux_mu = log_energy_flux_mu_raw -7;
+  log_energy_flux_mu = log_energy_flux_mu_raw - 7;
 
   log_energy_flux = (log_energy_flux_mu) + log_energy_flux_raw * log_energy_flux_sigma;
   energy_flux = pow(10, log_energy_flux);
@@ -139,8 +138,6 @@ transformed parameters {
     //K[n] = erg2kev * energy_flux[n] * inv( ggrb_int_cpl(alpha[n], ec[n], 10., 1.e3) );
 
   }
-
-
 
 }
 

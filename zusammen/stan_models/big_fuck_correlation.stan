@@ -1,3 +1,5 @@
+// TODO: Old version of alpha_correlation?
+
 functions {
 #include pgstat.stan
 #include band_grb.stan
@@ -9,7 +11,7 @@ data {
   int max_n_echan;
   int max_n_chan;
 
-  int<lower=0> N_dets[N_intervals]; // number of detectors poer data type
+  int<lower=0> N_dets[N_intervals]; // number of detectors per data type
   int<lower=0> N_chan[N_intervals, max(N_dets)]; // number of channels in each detector
   int<lower=0> N_echan[N_intervals,  max(N_dets)]; // number of energy side channels in each detector
 

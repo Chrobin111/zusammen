@@ -1,5 +1,5 @@
-real partial_log_like(int [] n_slice, int start, int end, vector alpha, vector ec, vector K, vector[,] observed_counts, vector[,] background_counts, vector[,] background_errors, int [,,] mask, int [,] N_channels_used, real [,] exposure, vector[,] ebounds_lo, vector[,] ebounds_hi, vector[,] ebounds_add, vector[,] ebounds_half, matrix[,] response, int [,,] idx_background_zero, int [,,] idx_background_nonzero, int [,] N_bkg_zero, int [,] N_bkg_nonzero, int [] N_dets, int [,] N_chan, int [,] N_echan, int max_n_chan, real emin, real emax ) {
-
+// TODO: Understand after pgstat and band_grb
+real partial_log_like(int[] n_slice, int start, int end, vector alpha, vector ec, vector K, vector[,] observed_counts, vector[,] background_counts, vector[,] background_errors, int [,,] mask, int [,] N_channels_used, real [,] exposure, vector[,] ebounds_lo, vector[,] ebounds_hi, vector[,] ebounds_add, vector[,] ebounds_half, matrix[,] response, int [,,] idx_background_zero, int [,,] idx_background_nonzero, int [,] N_bkg_zero, int [,] N_bkg_nonzero, int [] N_dets, int [,] N_chan, int [,] N_echan, int max_n_chan, real emin, real emax ) {
 
   real log_like = 0;
   int slice_length = num_elements(n_slice);
@@ -13,7 +13,6 @@ real partial_log_like(int [] n_slice, int start, int end, vector alpha, vector e
 
     for (m in 1:N_dets[n]) {
 
-
       expected_model_counts[m, : N_chan[n,m]] = (response[n, m,:N_chan[n,m], :N_echan[n,m]] * integral_flux(ebounds_lo[n, m, :N_echan[n, m]],
                                                                                                             ebounds_hi[n, m, :N_echan[n, m]],
                                                                                                             ebounds_add[n, m, :N_echan[n, m]],
@@ -23,7 +22,6 @@ real partial_log_like(int [] n_slice, int start, int end, vector alpha, vector e
                                                                                                             alpha[n]
                                                                                                             )) * exposure[n,m];
 
-
       //  print(log_like);
 
       log_like += sum(pgstat(observed_counts[n, m, mask[n,m,:N_channels_used[n,m]]],
@@ -31,13 +29,14 @@ real partial_log_like(int [] n_slice, int start, int end, vector alpha, vector e
                              background_errors[n, m, mask[n,m,:N_channels_used[n,m]]],
                              expected_model_counts[m, mask[n,m,:N_channels_used[n,m]]],
                              idx_background_zero[n,m, :N_bkg_zero[n,m]],
-                             idx_background_nonzero[n,m, :N_bkg_nonzero[n,m]]  ));
+                             idx_background_nonzero[n,m, :N_bkg_nonzero[n,m]]));
 
     }
 
   }
 
   return log_like;
+
 }
 
 

@@ -1,3 +1,5 @@
+// TODO: Old version of alpha_correlation?
+
 functions {
 #include pgstat.stan
 #include band.stan

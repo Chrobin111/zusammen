@@ -3,63 +3,70 @@ functions {
 #include band_grb.stan
 }
 
+
+
 data {
 
-  int<lower=1> N_intervals;
-  int max_n_echan;
-  int max_n_chan;
+  int<lower=1> N_intervals; // number of intervals
+  int max_n_echan; // maximum number of energy side channels
+  int max_n_chan; // maximum number of channels
 
   int<lower=0> N_dets[N_intervals]; // number of detectors per data type
   int<lower=0> N_chan[N_intervals, max(N_dets)]; // number of channels in each detector
   int<lower=0> N_echan[N_intervals,  max(N_dets)]; // number of energy side channels in each detector
 
-  int grb_id[N_intervals];
-  int N_grbs;
+  int grb_id[N_intervals]; // ID of each GRB
+  int N_grbs; // number of GRBs
 
-  vector[max_n_echan] ebounds_hi[N_intervals, max(N_dets)];
-  vector[max_n_echan] ebounds_lo[N_intervals, max(N_dets)];
+  vector[max_n_echan] ebounds_hi[N_intervals, max(N_dets)]; // energy higher bounds per energy side channel
+  vector[max_n_echan] ebounds_lo[N_intervals, max(N_dets)]; // energy lower bounds per energy side channel
 
 
 
-  vector[max_n_chan] observed_counts[N_intervals, max(N_dets)];
-  vector[max_n_chan] background_counts[N_intervals, max(N_dets)];
-  vector[max_n_chan] background_errors[N_intervals, max(N_dets)];
+  vector[max_n_chan] observed_counts[N_intervals, max(N_dets)]; // observed counts per channel
+  vector[max_n_chan] background_counts[N_intervals, max(N_dets)]; // background counts per channel
+  vector[max_n_chan] background_errors[N_intervals, max(N_dets)]; // background errors per channel
 
+  // TODO: ???
   int idx_background_zero[N_intervals, max(N_dets), max_n_chan];
   int idx_background_nonzero[N_intervals, max(N_dets), max_n_chan];
   int N_bkg_zero[N_intervals,max(N_dets)];
   int N_bkg_nonzero[N_intervals,max(N_dets)];
 
-  real exposure[N_intervals, max(N_dets)];
+  real exposure[N_intervals, max(N_dets)]; // exposure time per detector
 
-  matrix[max_n_echan, max_n_chan] response[N_intervals, max(N_dets)];
+  matrix[max_n_echan, max_n_chan] response[N_intervals, max(N_dets)]; // response per channel and energy side channel
 
 
 
-  int mask[N_intervals, max(N_dets), max_n_chan];
-  int N_channels_used[N_intervals,max(N_dets)];
+  int mask[N_intervals, max(N_dets), max_n_chan]; // TODO: mask??? per channel
+  int N_channels_used[N_intervals,max(N_dets)]; // number of channels used per detector
 
+  // TODO: ???
   vector[N_intervals] dl;
-  vector[N_intervals] z;
+  vector[N_intervals] z; // redshift?
 
-
-  int N_gen_spectra;
+  // TODO: ???
+  int N_gen_spectra; // number of generated spectra
   vector[N_gen_spectra] model_energy;
 
-  int N_correlation;
+  // TODO: ???
+  int N_correlation; // number of correlations
   vector[N_correlation] model_correlation;
-
 
 }
 
-transformed data {
-  vector[N_intervals] dl2 = square(dl);
-  int N_total_channels = 0;
-  real emin = 10.;
-  real emax = 1E6;
 
-  vector[max_n_echan] ebounds_add[N_intervals, max(N_dets)];
-  vector[max_n_echan] ebounds_half[N_intervals, max(N_dets)];
+
+transformed data {
+
+  vector[N_intervals] dl2 = square(dl); // dl squared
+  int N_total_channels = 0; // number of channel
+  real emin = 10.; // minimum energy
+  real emax = 1E6; // maximum energy
+
+  vector[max_n_echan] ebounds_add[N_intervals, max(N_dets)]; // TODO: why over 6?
+  vector[max_n_echan] ebounds_half[N_intervals, max(N_dets)]; // center of the energy bounds
 
   for (n in 1:N_intervals) {
 
@@ -68,8 +75,8 @@ transformed data {
       ebounds_half[n, m, :N_echan[n, m]] = 0.5*(ebounds_hi[n, m, :N_echan[n, m]]+ebounds_lo[n, m, :N_echan[n, m]]);
       ebounds_add[n, m, :N_echan[n, m]] = (ebounds_hi[n, m, :N_echan[n, m]] - ebounds_lo[n, m, :N_echan[n, m]])/6.0;
       N_total_channels += N_channels_used[n,m];
-    }
 
+    }
 
   }
 
@@ -79,8 +86,6 @@ transformed data {
 
   /* emin = 10. ./ (1+z); */
   /* emax = 1.E5 ./ (1+z); */
-
-
 
 }
 
@@ -102,11 +107,9 @@ parameters {
   real delta_mu;
   real<lower=0> delta_sigma;
 
-
-
-
-
 }
+
+
 
 transformed parameters {
 
@@ -124,12 +127,11 @@ transformed parameters {
 
   log_energy_flux = delta[grb_id] + gamma[grb_id] .* alpha;
 
-
   energy_flux = exp(log_energy_flux);
 
 
   // compute the folded counts
-
+  // TODO: understand after pgstat and band_grb
     for (n in 1:N_intervals) {
 
       epeak[n] = 10^epeak_log[n];
@@ -138,10 +140,7 @@ transformed parameters {
 
       for (m in 1:N_dets[n]) {
 
-
-
-
-	expected_model_counts[n,m,:N_chan[n,m]] = ((to_row_vector(integral_flux(ebounds_lo[n, m, :N_echan[n, m]],
+        expected_model_counts[n,m,:N_chan[n,m]] = ((to_row_vector(integral_flux(ebounds_lo[n, m, :N_echan[n, m]],
 										ebounds_hi[n, m, :N_echan[n, m]],
 										ebounds_add[n, m, :N_echan[n, m]],
 										ebounds_half[n, m, :N_echan[n, m]],
@@ -153,8 +152,8 @@ transformed parameters {
 										pre_calc[n,4])) * response[n, m,:N_echan[n,m],:N_chan[n,m]]) * exposure[n,m])';
 
       }
-    }
 
+    }
 
 }
 
@@ -185,24 +184,25 @@ model {
 
     for (m in 1:N_dets[n]) {
 
-
-      log_like[pos : pos + N_channels_used[n,m] - 1]= pgstat(observed_counts[n, m, mask[n,m,:N_channels_used[n,m]]],
+      // TODO: understand after pgstat and band_grb
+      log_like[pos : pos + N_channels_used[n,m] - 1] = pgstat(observed_counts[n, m, mask[n,m,:N_channels_used[n,m]]],
 							     background_counts[n, m, mask[n,m,:N_channels_used[n,m]]],
 							     background_errors[n, m, mask[n,m,:N_channels_used[n,m]]],
 							     expected_model_counts[n,m, mask[n,m,:N_channels_used[n,m]]],
 							     idx_background_zero[n,m, :N_bkg_zero[n,m]],
-							     idx_background_nonzero[n,m, :N_bkg_nonzero[n,m]]  );
-    pos += N_channels_used[n,m];
+							     idx_background_nonzero[n,m, :N_bkg_nonzero[n,m]] );
+      pos += N_channels_used[n,m];
 
     }
 
   }
 
-    target += sum(log_like);
+  target += sum(log_like);
 
 }
 
 
+// TODO: ???
 generated quantities {
 
   vector[N_gen_spectra] vfv_spectra[N_intervals];
@@ -213,85 +213,46 @@ generated quantities {
   for (n in 1:N_intervals) {
     vfv_spectra[n] =square(model_energy) .* differential_flux(model_energy, pre_calc[n, 1], pre_calc[n, 2], pre_calc[n, 3], alpha[n], beta[n], pre_calc[n, 4]);
 
-
-
-
-
-
-
     for (m in 1:N_dets[n]) {
 
         /* vector[N_channels_used[n,m]] ppc_background = background_model(observed_counts[n, m, mask[n,m,:N_channels_used[n,m]]], */
-	/* 							       background_counts[n, m, mask[n,m,:N_channels_used[n,m]]], */
-	/* 							       background_errors[n, m, mask[n,m,:N_channels_used[n,m]]], */
-	/* 							       expected_model_counts[n, m, mask[n,m,:N_channels_used[n,m]]]); */
+        /* 							       background_counts[n, m, mask[n,m,:N_channels_used[n,m]]], */
+        /* 							       background_errors[n, m, mask[n,m,:N_channels_used[n,m]]], */
+        /* 							       expected_model_counts[n, m, mask[n,m,:N_channels_used[n,m]]]); */
 
       //	vector[N_channels_used[n,m]] rate = ppc_background + expected_model_counts[n, m, mask[n,m,:N_channels_used[n,m]]] ;
-	vector[N_channels_used[n,m]] source_rate = expected_model_counts[n, m, mask[n,m,:N_channels_used[n,m]]];
+      vector[N_channels_used[n,m]] source_rate = expected_model_counts[n, m, mask[n,m,:N_channels_used[n,m]]];
 
-	for (i in 1:N_channels_used[n,m]) {
+      for (i in 1:N_channels_used[n,m]) {
 
+        /* if (rate[i]<=0) { */
+	      /*   print(pre_calc[n,:]); */
+	      /*   print(ppc_background); */
+	      /* } */
 
-	  /* if (rate[i]<=0) { */
-	  /*   print(pre_calc[n,:]); */
-	  /*   print(ppc_background); */
+	      /* if (rate[i]>2^30) { */
+	      /*   count_ppc[n,m,i] = 0; */
+	      /* } */
+	      /* else { */
+	      /*   count_ppc[n,m,i] = poisson_rng( rate[i] ); */
+	      /* } */
 
+	      if (source_rate[i]>2^30) {
+	        source_ppc[n,m,i] = 0;
+	      }
+	      else {
+	        source_ppc[n,m,i] = poisson_rng( source_rate[i] );
+	      }
 
-	  /* } */
-
-
-
-	  /* if (rate[i]>2^30) { */
-
-
-	  /*   count_ppc[n,m,i] = 0; */
-
-	  /* } */
-
-	  /* else { */
-
-
-	  /*   count_ppc[n,m,i] = poisson_rng( rate[i] ); */
-
-	  /* } */
-
-
-
-	  if (source_rate[i]>2^30) {
-
-
-	    source_ppc[n,m,i] = 0;
-
-	  }
-
-	  else {
-
-
-	    source_ppc[n,m,i] = poisson_rng( source_rate[i] );
-
-	  }
-
-
-
-
-
-	}
+      }
 
     }
-
-
-
 
   }
 
 
   for (n in 1:N_grbs) {
-
     correlations[n] = delta[n] + gamma[n] * model_correlation;
-
   }
 
-
 }
-
-
