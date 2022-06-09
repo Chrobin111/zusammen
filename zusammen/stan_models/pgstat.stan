@@ -2,11 +2,11 @@ vector background_model(vector observed_counts, vector background_counts, vector
 
   int N = num_elements(expected_model_counts);
 
-  vector[N] MB = background_counts + expected_model_counts;
-  vector[N] s2 = square(background_error);
+  vector[N] MB = background_counts + expected_model_counts; // All counts
+  vector[N] s2 = square(background_error); // Sigma squared
 
   vector[N] b = 0.5 * (sqrt(square(MB) - 2 * s2 .* (MB - 2 * observed_counts) + square(s2))
-		       + background_counts - expected_model_counts - s2);
+		       + background_counts - expected_model_counts - s2); // ?
   return b;
 
 
@@ -17,8 +17,8 @@ vector pgstat(vector observed_counts, vector background_counts, vector backgroun
 
   int N = num_elements(expected_model_counts);
   vector[N] log_likes;
-  vector[N] s2 = square(background_error);
-  vector[N] b = background_model(observed_counts, background_counts, background_error, expected_model_counts);
+  vector[N] s2 = square(background_error); // Sigma squared
+  vector[N] b = background_model(observed_counts, background_counts, background_error, expected_model_counts); // Background model
   vector[N] factorial_term = expected_model_counts - lgamma(observed_counts +1 );
 
   log_likes[idx_background_nonzero] = (-square(b[idx_background_nonzero] - background_counts[idx_background_nonzero]) ./ (2 * s2[idx_background_nonzero])

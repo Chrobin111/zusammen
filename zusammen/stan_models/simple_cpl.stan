@@ -3,6 +3,8 @@ functions {
 #include cpl.stan
 }
 
+
+
 data {
 
   int<lower=1> N_intervals;
@@ -49,7 +51,6 @@ data {
   /* int N_correlation; */
   /* vector[N_correlation] model_correlation; */
 
-
 }
 
 transformed data {
@@ -62,18 +63,13 @@ transformed data {
   array[N_intervals, max(N_dets)] vector[max_n_echan] ebounds_half;
 
 
-
   // precalculation of energy bounds
-
   for (n in 1:N_intervals) {
-
     for (m in 1:N_dets[n]) {
       ebounds_half[n, m, :N_echan[n, m]] = 0.5*(ebounds_hi[n, m, :N_echan[n, m]]+ebounds_lo[n, m, :N_echan[n, m]]);
       ebounds_add[n, m, :N_echan[n, m]] = (ebounds_hi[n, m, :N_echan[n, m]] - ebounds_lo[n, m, :N_echan[n, m]])/6.0;
       N_total_channels += N_channels_used[n,m];
     }
-
-
   }
 
 
@@ -82,8 +78,6 @@ transformed data {
 
   /* emin = 10. ./ (1+z); */
   /* emax = 1.E5 ./ (1+z); */
-
-
 
 }
 
@@ -96,11 +90,9 @@ parameters {
   vector<lower=0, upper=5>[N_intervals] log_epeak;
   vector[N_intervals] log_energy_flux;
 
-
-
-
-
 }
+
+
 
 transformed parameters {
 
@@ -111,7 +103,6 @@ transformed parameters {
 
 
   // compute the folded counts
-
     for (n in 1:N_intervals) {
 
       epeak[n] = 10^log_epeak[n];
@@ -120,20 +111,21 @@ transformed parameters {
 
       for (m in 1:N_dets[n]) {
 
-	expected_model_counts[n,m,:N_chan[n,m]] = ((to_row_vector(integral_flux(ebounds_lo[n, m, :N_echan[n, m]],
-										ebounds_hi[n, m, :N_echan[n, m]],
-										ebounds_add[n, m, :N_echan[n, m]],
-										ebounds_half[n, m, :N_echan[n, m]],
-										pre_calc[n,1],
-										pre_calc[n,2],
-										alpha[n]
-										)) * response[n, m,:N_echan[n,m],:N_chan[n,m]]))' * exposure[n,m];
+        expected_model_counts[n,m,:N_chan[n,m]] = ((to_row_vector(integral_flux(ebounds_lo[n, m, :N_echan[n, m]],
+                          ebounds_hi[n, m, :N_echan[n, m]],
+                          ebounds_add[n, m, :N_echan[n, m]],
+                          ebounds_half[n, m, :N_echan[n, m]],
+                          pre_calc[n,1],
+                          pre_calc[n,2],
+                          alpha[n]
+                          )) * response[n, m,:N_echan[n,m],:N_chan[n,m]]))' * exposure[n,m];
 
       }
+
     }
 
-
 }
+
 
 
 model {
@@ -152,8 +144,6 @@ model {
 
     for (m in 1:N_dets[n]) {
 
-
-
       log_like[pos : pos + N_channels_used[n,m] - 1]= pgstat(observed_counts[n, m, mask[n,m,:N_channels_used[n,m]]],
 							     background_counts[n, m, mask[n,m,:N_channels_used[n,m]]],
 							     background_errors[n, m, mask[n,m,:N_channels_used[n,m]]],
@@ -162,14 +152,14 @@ model {
 							     idx_background_nonzero[n,m, :N_bkg_nonzero[n,m]]  );
       pos += N_channels_used[n,m];
 
-
     }
 
   }
 
-      target += sum(log_like);
+  target += sum(log_like);
 
 }
+
 
 
 generated quantities {

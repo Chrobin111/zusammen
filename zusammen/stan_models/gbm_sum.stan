@@ -3,6 +3,8 @@ functions {
 #include band_grb.stan
 }
 
+
+
 data {
 
   int<lower=1> N_intervals;
@@ -46,19 +48,18 @@ data {
   int N_gen_spectra;
   vector[N_gen_spectra] model_energy;
 
-
-
 }
 
+
+
 transformed data {
+
   vector[N_intervals] dl2 = square(dl);
 
 
   int N_total_channels = 0;
   real emin = 10.;
   real emax = 1E6;
-
-
 
 
   array[N_intervals, max(N_dets)] vector[max_n_echan] ebounds_add;
@@ -71,8 +72,8 @@ transformed data {
       ebounds_half[n, m, :N_echan[n, m]] = 0.5*(ebounds_hi[n, m, :N_echan[n, m]]+ebounds_lo[n, m, :N_echan[n, m]]);
       ebounds_add[n, m, :N_echan[n, m]] = (ebounds_hi[n, m, :N_echan[n, m]] - ebounds_lo[n, m, :N_echan[n, m]])/6.0;
       N_total_channels += N_channels_used[n,m];
-    }
 
+    }
 
   }
 
@@ -82,8 +83,6 @@ transformed data {
 
   /* emin = 10. ./ (1+z); */
   /* emax = 1.E5 ./ (1+z); */
-
-
 
 }
 
@@ -105,29 +104,30 @@ transformed parameters {
 
   // compute the folded counts
 
-    for (n in 1:N_intervals) {
+  for (n in 1:N_intervals) {
 
-      // norm, ec, epslit, pre
-      pre_calc[n, :] = band_precalculation(10^log_energy_flux[n], alpha[n], beta[n], 10^log_epeak[n], emin, emax);
+    // norm, ec, epslit, pre
+    pre_calc[n, :] = band_precalculation(10^log_energy_flux[n], alpha[n], beta[n], 10^log_epeak[n], emin, emax);
 
-      for (m in 1:N_dets[n]) {
+    for (m in 1:N_dets[n]) {
 
-	expected_model_counts[n,m,:N_chan[n,m]] = ((to_row_vector(integral_flux(ebounds_lo[n, m, :N_echan[n, m]],
-										ebounds_hi[n, m, :N_echan[n, m]],
-										ebounds_add[n, m, :N_echan[n, m]],
-										ebounds_half[n, m, :N_echan[n, m]],
-										pre_calc[n,1],
-										pre_calc[n,2],
-										pre_calc[n,3],
-										alpha[n],
-										beta[n],
-										pre_calc[n,4])) * response[n, m,:N_echan[n,m],:N_chan[n,m]]) * exposure[n,m])';
+      expected_model_counts[n,m,:N_chan[n,m]] = ((to_row_vector(integral_flux(ebounds_lo[n, m, :N_echan[n, m]],
+								ebounds_hi[n, m, :N_echan[n, m]],
+								ebounds_add[n, m, :N_echan[n, m]],
+								ebounds_half[n, m, :N_echan[n, m]],
+								pre_calc[n,1],
+								pre_calc[n,2],
+								pre_calc[n,3],
+								alpha[n],
+								beta[n],
+								pre_calc[n,4])) * response[n, m,:N_echan[n,m],:N_chan[n,m]]) * exposure[n,m])';
 
-      }
     }
 
+  }
 
 }
+
 
 
 model {
@@ -165,6 +165,7 @@ model {
 }
 
 
+
 generated quantities {
 
   vector[N_gen_spectra] vfv_spectra[N_intervals];
@@ -176,66 +177,38 @@ generated quantities {
 
     vfv_spectra[n] =square(model_energy) .* differential_flux(model_energy, pre_calc[n, 1], pre_calc[n, 2], pre_calc[n, 3], alpha[n], beta[n], pre_calc[n, 4]);
 
-
-
-
-
-
     for (m in 1:N_dets[n]) {
 
-        vector[N_channels_used[n,m]] ppc_background = background_model(observed_counts[n, m, mask[n,m,:N_channels_used[n,m]]],
-								       background_counts[n, m, mask[n,m,:N_channels_used[n,m]]],
-								       background_errors[n, m, mask[n,m,:N_channels_used[n,m]]],
-								       expected_model_counts[n, m, mask[n,m,:N_channels_used[n,m]]]);
+      vector[N_channels_used[n,m]] ppc_background = background_model(observed_counts[n, m, mask[n,m,:N_channels_used[n,m]]],
+						       background_counts[n, m, mask[n,m,:N_channels_used[n,m]]],
+						       background_errors[n, m, mask[n,m,:N_channels_used[n,m]]],
+						       expected_model_counts[n, m, mask[n,m,:N_channels_used[n,m]]]);
 
-	vector[N_channels_used[n,m]] rate = ppc_background + expected_model_counts[n, m, mask[n,m,:N_channels_used[n,m]]] ;
-	vector[N_channels_used[n,m]] source_rate = expected_model_counts[n, m, mask[n,m,:N_channels_used[n,m]]] ;
-
-
-	for (i in 1:N_channels_used[n,m]) {
-
-	  if (rate[i]>2^30) {
+      vector[N_channels_used[n,m]] rate = ppc_background + expected_model_counts[n, m, mask[n,m,:N_channels_used[n,m]]] ;
+      vector[N_channels_used[n,m]] source_rate = expected_model_counts[n, m, mask[n,m,:N_channels_used[n,m]]] ;
 
 
-	    count_ppc[n,m,i] = 0;
+      for (i in 1:N_channels_used[n,m]) {
 
-	  }
-
-	  else {
-
-
-	    count_ppc[n,m,i] = poisson_rng( rate[i] );
-
-	  }
+        if (rate[i]>2^30) {
+          count_ppc[n,m,i] = 0;
+        }
+        else {
+          count_ppc[n,m,i] = poisson_rng( rate[i] );
+        }
 
 
+        if (source_rate[i]>2^30) {
+          source_ppc[n,m,i] = 0;
+        }
+        else {
+          source_ppc[n,m,i] = poisson_rng( source_rate[i] );
+        }
 
-	  if (source_rate[i]>2^30) {
-
-
-	    source_ppc[n,m,i] = 0;
-
-	  }
-
-	  else {
-
-
-	    source_ppc[n,m,i] = poisson_rng( source_rate[i] );
-
-	  }
-
-
-	}
+      }
 
     }
 
-
-
-
   }
 
-
-
 }
-
-

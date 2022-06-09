@@ -1,3 +1,4 @@
+// TODO: ???
 real ggrb_int_cpl(real alpha, real ec, real emin, real emax) {
   real i1 = gamma_q(2 + alpha, emin / ec) * tgamma(2 + alpha);
   real i2 = gamma_q(2 + alpha, emax / ec) * tgamma(2 + alpha);
@@ -14,11 +15,10 @@ vector cpl(vector energy, real norm, real ec, real alpha) {
 
   // return norm * exp(log_v);
 
-
-
-    return norm * pow(energy/piv, alpha) .* exp(-energy/ec);
+  return norm * pow(energy/piv, alpha) .* exp(-energy/ec);
 
 }
+
 
 
 real cpl_indi(real energy, real K, real alpha, real ec) {
@@ -27,15 +27,15 @@ real cpl_indi(real energy, real K, real alpha, real ec) {
 
   return K * pow(energy/piv, alpha) * exp(-energy/ec);
 
-
 }
+
+
 
 real cpl_flux_integrand(real x, real xc, real[] theta, real[] x_r, int[] x_i) {
 
   real out = x * cpl_indi(x, theta[1], theta[2], theta[3]);
 
   return out;
-
 
 }
 

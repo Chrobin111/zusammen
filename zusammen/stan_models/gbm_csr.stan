@@ -3,6 +3,8 @@ functions {
 #include band_grb.stan
 }
 
+
+
 data {
 
   int<lower=1> N_intervals;
@@ -46,11 +48,12 @@ data {
   int N_gen_spectra;
   vector[N_gen_spectra] model_energy;
 
-
-
 }
 
+
+
 transformed data {
+
   vector[N_intervals] dl2 = square(dl);
 
   real emin = 10.;
@@ -62,18 +65,10 @@ transformed data {
   vector out = csr_extract_w( response[1,1] );
 
 
-
   /* vector[N_intervals] emin; */
   /* vector[N_intervals] emax; */
 
   /* emin = 10. ./ (1+z); */
   /* emax = 1.E5 ./ (1+z); */
 
-
-
 }
-
-
-}
-
-
