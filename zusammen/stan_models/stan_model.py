@@ -48,7 +48,6 @@ class StanModel(object):
         """
 
         if self._model is not None:
-
             os.remove(self._model.exe_file)
 
 
