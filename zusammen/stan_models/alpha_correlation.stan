@@ -118,7 +118,7 @@ transformed parameters {
   vector[N_grbs] delta;
   vector[N_intervals] epeak;
   vector[N_intervals] log_energy_flux;
-  vector[N_intervals] energy_flux;
+  vector[N_intervals] energy_flux; // TODO: Luminosity?
   vector[max_n_chan] expected_model_counts[N_intervals, max(N_dets)];
 
   gamma = gamma_mu + gamma_offset * gamma_sigma;
@@ -211,7 +211,7 @@ generated quantities {
   vector[N_correlation] correlations[N_grbs];
 
   for (n in 1:N_intervals) {
-    vfv_spectra[n] =square(model_energy) .* differential_flux(model_energy, pre_calc[n, 1], pre_calc[n, 2], pre_calc[n, 3], alpha[n], beta[n], pre_calc[n, 4]);
+    vfv_spectra[n] = square(model_energy) .* differential_flux(model_energy, pre_calc[n, 1], pre_calc[n, 2], pre_calc[n, 3], alpha[n], beta[n], pre_calc[n, 4]);
 
     for (m in 1:N_dets[n]) {
 
@@ -249,7 +249,6 @@ generated quantities {
     }
 
   }
-
 
   for (n in 1:N_grbs) {
     correlations[n] = delta[n] + gamma[n] * model_correlation;
