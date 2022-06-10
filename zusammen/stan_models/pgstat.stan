@@ -6,7 +6,7 @@ vector background_model(vector observed_counts, vector background_counts, vector
   vector[N] s2 = square(background_error); // Sigma squared
 
   vector[N] b = 0.5 * (sqrt(square(MB) - 2 * s2 .* (MB - 2 * observed_counts) + square(s2))
-		       + background_counts - expected_model_counts - s2); // ?
+		       + background_counts - expected_model_counts - s2); // TODO: ?
   return b;
 
 
