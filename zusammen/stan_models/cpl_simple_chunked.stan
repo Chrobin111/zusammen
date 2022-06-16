@@ -94,8 +94,8 @@ transformed data {
 parameters {
 
   //vector<lower=-1.8, upper=1.>[N_intervals] alpha;
-  vector<lower=-1.9, upper=1>[N_intervals] alpha;
-  vector<lower=0, upper=4>[N_intervals] log_ec;
+  vector<lower=-1.9, upper=1>[N_intervals] alpha; // TODO: alpha?
+  vector<lower=0, upper=4>[N_intervals] log_ec; // TODO: Peak energy?
   //vector<lower=-5,upper=1>[N_intervals] log_K;
 
   //vector<lower=0, upper=5>[N_intervals] log_epeak;

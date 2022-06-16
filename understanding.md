@@ -60,9 +60,17 @@
 - generated quantities: ???
 
 ### band_grb
-- ggrb_into_pl:
-- ggrb_int_cpl:
-- band_precalculation:
+- ggrb_into_pl:  
+    $\begin{cases}
+    ((\alpha - \beta)^{\alpha-\beta} \cdot \frac{\mathrm{e}^{\beta-\alpha}}{E_c^\beta})/(2\beta) \cdot (E_\mathrm{max}^{2 + \beta} - E_\mathrm{min}^{2 + \beta}), & \beta \neq 2 \\
+    (\alpha - \beta)^{\alpha-\beta} \cdot \frac{\mathrm{e}^{\beta-\alpha}}{E_c^\beta} \cdot \log\frac{E_\mathrm{max}}{E_\mathrm{min}}, & \mathrm{else}
+    \end{cases}$
+- ggrb_int_cpl:  
+    $c(\alpha,E_c,E_\mathrm{min},E_\mathrm{max}) = E_c^2 \cdot (\Gamma(2 + \alpha, E_\mathrm{max}/E_c) - \Gamma(2 + \alpha, E_\mathrm{min}/E_c)) \cdot \Gamma(2 + \alpha)$
+- band_precalculation:  
+    norm $= \begin{cases}
+    F / (c(\alpha,E_c,E_\mathrm{min},E_\mathrm{split}) + p(\alpha,\beta,E_c,E_\mathrm{split},E_\mathrm{max}))
+    \end{cases}$
 - differential_flux:
 - integral_flux: 
 
@@ -257,8 +265,10 @@
 - band_precalculation: compare!!
 
 ### pgstat
-- background_model:
-- pgstat:
+- background_model: $b = 0.5 \cdot \sqrt{MB^2 - 2 \sigma^2 \cdot (MB - 2 N_\mathrm{obs}) + \sigma^2} + N_\mathrm{back} - N_\mathrm{exp} - \sigma^2$
+- pgstat:  
+$L(idx \neq 0) = -\frac{(BM - N_\mathrm{back})^2}{2 \sigma^2} + N_\mathrm{obs} \cdot \log(BM + N_\mathrm{exp}) - BM - N_\mathrm{exp} + \log\Gamma(idx + 1) - 0.5 \cdot \log(2\pi) - \log(\sigma)$  
+$L(idx=0) = N_\mathrm{obs} \log(N_\mathrm{exp} - N_\mathrm{exp} + \log\Gamma(idx + 1))$
 
 ### simple_cpl
 - data: usual
