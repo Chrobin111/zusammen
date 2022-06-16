@@ -158,7 +158,7 @@
     - $x_i$
 - parameters:
     - $\alpha$
-    - $\log E_C$
+    - $\log E_C$ (observed energy)
     - $\log L$
 - transformed parameters:
     - $E_C$
@@ -175,7 +175,7 @@
 - ggrb_int_cpl:
 - cpl: $N \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/E_C}$
 - cpl_indi: $K \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/E_C}$
-- cpl_flux_integrand: $x \cdot \mathrm{cpl_indi}(x,\theta)$
+- cpl_flux_integrand: $x \cdot$ cpl_indi $(x,\theta)$
 - differential_flux: $L_\mathrm{diff}(E,N,E_C,\alpha) = \mathrm{cpl}(E,N,E_C,\alpha)$
 - integral_flux: $E_\text{bounds,add} \cdot L_\mathrm{diff}(E_\text{bounds,lo}, N, E_C, \alpha) + 4 \cdot L_\mathrm{diff}(E_\text{bounds,half}, N, E_C, \alpha) + L_\mathrm{diff}(E_\text{bounds,hi}, N, E_C, \alpha)$
 
