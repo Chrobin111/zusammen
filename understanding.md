@@ -61,18 +61,26 @@
 
 ### band_grb
 - ggrb_into_pl:  
-    $\begin{cases}
-    ((\alpha - \beta)^{\alpha-\beta} \cdot \frac{\mathrm{e}^{\beta-\alpha}}{E_c^\beta})/(2\beta) \cdot (E_\mathrm{max}^{2 + \beta} - E_\mathrm{min}^{2 + \beta}), & \beta \neq 2 \\
-    (\alpha - \beta)^{\alpha-\beta} \cdot \frac{\mathrm{e}^{\beta-\alpha}}{E_c^\beta} \cdot \log\frac{E_\mathrm{max}}{E_\mathrm{min}}, & \mathrm{else}
+    $pl(\alpha,\beta,E_c,E_\mathrm{min},E_\mathrm{max}) = \begin{cases}
+        ((\alpha - \beta)^{\alpha-\beta} \cdot \frac{\mathrm{e}^{\beta-\alpha}}{E_c^\beta})/(2\beta) \cdot (E_\mathrm{max}^{2 + \beta} - E_\mathrm{min}^{2 + \beta}), & \beta \neq 2 \\
+        (\alpha - \beta)^{\alpha-\beta} \cdot \frac{\mathrm{e}^{\beta-\alpha}}{E_c^\beta} \cdot \log\frac{E_\mathrm{max}}{E_\mathrm{min}}, & \mathrm{else}
     \end{cases}$
 - ggrb_int_cpl:  
-    $c(\alpha,E_c,E_\mathrm{min},E_\mathrm{max}) = E_c^2 \cdot (\Gamma(2 + \alpha, E_\mathrm{max}/E_c) - \Gamma(2 + \alpha, E_\mathrm{min}/E_c)) \cdot \Gamma(2 + \alpha)$
+    $cpl(\alpha,E_c,E_\mathrm{min},E_\mathrm{max}) = E_c^2 \cdot (\Gamma(2 + \alpha, E_\mathrm{max}/E_c) - \Gamma(2 + \alpha, E_\mathrm{min}/E_c)) \cdot \Gamma(2 + \alpha)$
 - band_precalculation:  
     norm $= \begin{cases}
-    F / (c(\alpha,E_c,E_\mathrm{min},E_\mathrm{split}) + p(\alpha,\beta,E_c,E_\mathrm{split},E_\mathrm{max}))
+    F / (c(\alpha,E_c,E_\mathrm{min},E_\mathrm{split}) + p(\alpha,\beta,E_c,E_\mathrm{split},E_\mathrm{max})), & E_\mathrm{min} \leq E_\mathrm{split} \leq E_\mathrm{max} \\
+    F / pl(\alpha,\beta,E_c,E_\mathrm{split},E_\mathrm{max}), & E_\mathrm{split} < E_\mathrm{min}
+    \end{cases}$  
+    $pre = (\alpha-\beta)^{\alpha-\beta} \cdot \mathrm{e}^{\beta-\alpha}$
+- differential_flux:  
+    $F_\mathrm{diff}^i = \mathrm{norm} \cdot o^i$  
+    $o^i = \begin{cases}
+        (E/E_c)^\alpha \cdot \mathrm{e}^{-E/E_c}, & E < E\mathrm{split} \\
+        pre \cdot (E/E_c)^\beta, & \mathrm{else}
     \end{cases}$
-- differential_flux:
-- integral_flux: 
+- integral_flux:  
+    $F_\mathrm{int} = E_\mathrm{bounds,add} \cdot (F_\mathrm{diff}(E_\mathrm{bounds,lo},\dots) + 4 \cdot F_\mathrm{diff}(E_\mathrm{bounds,half},\dots) + F_\mathrm{diff}(E_\mathrm{bounds,hi},\dots))$
 
 ### big_fuck_correlation
 - data: usual
@@ -144,7 +152,9 @@
 - generated quantities: ???
 
 ### cpl_interval_fold:
-- partial_log_like: 
+- partial_log_like:  
+    $N_\mathrm{exp} = R \cdot F_\mathrm{int}(E_\mathrm{bounds,lo},E_\mathrm{bounds,hi},E_\mathrm{bounds,add},E_\mathrm{bounds,half},K,E_c,\alpha) \cdot t_\mathrm{exposure}$  
+    $L = \sum_i PG(N_\mathrm{obs}^i,N_\mathrm{back}^i,\sigma^i,N_\mathrm{exp}^i,idx_0^i,idx^i)$
 
 ### cpl_simple_chunked:
 - data: usual
