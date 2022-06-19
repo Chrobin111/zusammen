@@ -154,7 +154,7 @@
 ### cpl_interval_fold:
 - partial_log_like:  
     $N_\mathrm{exp} = R \cdot F_\mathrm{int}(E_\mathrm{bounds,lo},E_\mathrm{bounds,hi},E_\mathrm{bounds,add},E_\mathrm{bounds,half},K,E_c,\alpha) \cdot t_\mathrm{exposure}$  
-    $L = \sum_i PG(N_\mathrm{obs}^i,N_\mathrm{back}^i,\sigma^i,N_\mathrm{exp}^i,idx_0^i,idx^i)$
+    returns $L = \sum_i PG(N_\mathrm{obs}^i,N_\mathrm{back}^i,\sigma^i,N_\mathrm{exp}^i,idx_0^i,idx^i)$
 
 ### cpl_simple_chunked:
 - data: usual
@@ -162,24 +162,27 @@
     - ebounds_half
     - ebounds_add
     - $N_\text{total channels}$
+    - all_N
     - keV to erg
     - erg to keV
+    - $E_\mathrm{min}$
+    - $E_\mathrm{max}$
     - $x_r$
     - $x_i$
 - parameters:
     - $\alpha$
     - $\log E_C$ (observed energy)
-    - $\log L$
+    - $\log F$
 - transformed parameters:
     - $E_C$
-    - $L$
+    - $F$
     - $K = L \cdot \left( \int_{10}^{1000} dx\ x \cdot K \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/100} \right)^{-1}$
 - model:
-    - $\log L \sim \mathcal{N}(0,1)$
+    - $\log y \sim \mathcal{N}(0,1)$
+    - $\log y_\sigma \sim \mathcal{N}(0,1)$
     - $\alpha \sim \mathcal{N}(-1,0.5)$
     - $\log E_C \sim \mathcal{N}(2,1)$
-    - target: ???
-- generated quantities: ???
+    - target: sums over partial_log_like
 
 ### cpl
 - ggrb_int_cpl:
