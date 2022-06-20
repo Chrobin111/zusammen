@@ -42,9 +42,8 @@ data {
   int mask[N_intervals, max(N_dets), max_n_chan]; // TODO: mask??? per channel
   int N_channels_used[N_intervals,max(N_dets)]; // number of channels used per detector
 
-  // TODO: ???
-  vector[N_intervals] dl;
-  vector[N_intervals] z; // redshift?
+  vector[N_intervals] dl; // luminosity distance
+  vector[N_intervals] z; // redshift
 
   // TODO: ???
   int N_gen_spectra; // number of generated spectra
