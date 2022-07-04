@@ -1,4 +1,4 @@
-// TODO: ???
+// unused
 real ggrb_int_cpl(real alpha, real ec, real emin, real emax) {
   real i1 = gamma_q(2 + alpha, emin / ec) * tgamma(2 + alpha);
   real i2 = gamma_q(2 + alpha, emax / ec) * tgamma(2 + alpha);
@@ -7,6 +7,7 @@ real ggrb_int_cpl(real alpha, real ec, real emin, real emax) {
 
 
 
+// Cut-off Power Law
 vector cpl(vector energy, real norm, real ec, real alpha) {
 
   real piv = 100.;
@@ -41,6 +42,7 @@ real cpl_flux_integrand(real x, real xc, real[] theta, real[] x_r, int[] x_i) {
 
 
 
+// energy-differentiated flux
 vector differential_flux( vector energy, real norm, real ec, real alpha) {
 
   return cpl(energy, norm, ec, alpha);
@@ -49,6 +51,7 @@ vector differential_flux( vector energy, real norm, real ec, real alpha) {
 
 
 
+// flux
 vector integral_flux(vector ebounds_lo, vector ebounds_hi, vector ebounds_add, vector ebounds_half, real norm, real ec, real alpha) {
 
   return (ebounds_add

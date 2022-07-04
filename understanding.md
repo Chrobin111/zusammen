@@ -1,5 +1,26 @@
 # Files
 ## Stan functions
+### cpl
+- ggrb_int_cpl:
+    $cpl(\alpha,E_c,E_\mathrm{min},E_\mathrm{max}) = -E_c^2 \cdot (\Gamma(2 + \alpha, E_\mathrm{max}/E_c) - \Gamma(2 + \alpha, E_\mathrm{min}/E_c)) \cdot \Gamma(2 + \alpha)$
+- cpl: $N \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/E_C}$
+- cpl_indi: $K \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/E_C}$
+- cpl_flux_integrand: $x \cdot$ cpl_indi $(x,\theta)$
+- differential_flux: $\partial_t L(E,N,E_C,\alpha) = \mathrm{cpl}(E,N,E_C,\alpha)$
+- integral_flux (Simpson integral):  
+    $F = E_\text{bounds,add} \cdot (\partial_t L(E_\text{bounds,lo}, N, E_C, \alpha) + 4 \cdot \partial_t L(E_\text{bounds,half}, N, E_C, \alpha) + \partial_t L(E_\text{bounds,hi}, N, E_C, \alpha))$
+
+### pgstat
+- background_model: $b = 0.5 \cdot \sqrt{MB^2 - 2 \sigma^2 \cdot (MB - 2 N_\mathrm{obs}) + \sigma^2} + N_\mathrm{back} - N_\mathrm{exp} - \sigma^2$
+- pgstat:  
+$PG(idx \neq 0) = -\frac{(BM - N_\mathrm{back})^2}{2 \sigma^2} + N_\mathrm{obs} \cdot \log(BM + N_\mathrm{exp}) - BM - N_\mathrm{exp} + \log\Gamma(idx + 1) - 0.5 \cdot \log(2\pi) - \log(\sigma)$  
+$PG(idx=0) = N_\mathrm{obs} \log(N_\mathrm{exp}) - N_\mathrm{exp} + \log\Gamma(idx + 1)$
+
+### cpl_interval_fold:
+- partial_log_like:  
+    $N_\mathrm{exp}^i = R^{ij} \cdot F_j \cdot t_\mathrm{exposure}$  
+    $L = \sum_i PG(N_\mathrm{obs}^i,N_\mathrm{back}^i,\sigma^i,N_\mathrm{exp}^i,idx_0^i,idx^i)$
+
 ### band_grb
 - ggrb_into_pl:  
     $pl(\alpha,\beta,E_c,E_\mathrm{min},E_\mathrm{max}) = \begin{cases}
@@ -15,35 +36,43 @@
     \end{cases}$  
     $pre = (\alpha-\beta)^{\alpha-\beta} \cdot \mathrm{e}^{\beta-\alpha}$
 - differential_flux:  
-    $F_\mathrm{diff}^i = \mathrm{norm} \cdot o^i$  
+    $\partial_t F^i = \mathrm{norm} \cdot o^i$  
     $o^i = \begin{cases}
         (E/E_c)^\alpha \cdot \mathrm{e}^{-E/E_c}, & E < E\mathrm{split} \\
         pre \cdot (E/E_c)^\beta, & \mathrm{else}
     \end{cases}$
-- integral_flux:  
-    $F_\mathrm{int} = E_\mathrm{bounds,add} \cdot (F_\mathrm{diff}(E_\mathrm{bounds,lo},\dots) + 4 \cdot F_\mathrm{diff}(E_\mathrm{bounds,half},\dots) + F_\mathrm{diff}(E_\mathrm{bounds,hi},\dots))$
-
-### cpl_interval_fold:
-- partial_log_like:  
-    $N_\mathrm{exp} = R \cdot F_\mathrm{int}(E_\mathrm{bounds,lo},E_\mathrm{bounds,hi},E_\mathrm{bounds,add},E_\mathrm{bounds,half},K,E_c,\alpha) \cdot t_\mathrm{exposure}$  
-    $L = \sum_i PG(N_\mathrm{obs}^i,N_\mathrm{back}^i,\sigma^i,N_\mathrm{exp}^i,idx_0^i,idx^i)$
-
-### cpl
-- ggrb_int_cpl:
-    $cpl(\alpha,E_c,E_\mathrm{min},E_\mathrm{max}) = -E_c^2 \cdot (\Gamma(2 + \alpha, E_\mathrm{max}/E_c) - \Gamma(2 + \alpha, E_\mathrm{min}/E_c)) \cdot \Gamma(2 + \alpha)$
-- cpl: $N \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/E_C}$
-- cpl_indi: $K \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/E_C}$
-- cpl_flux_integrand: $x \cdot$ cpl_indi $(x,\theta)$
-- differential_flux: $L_\mathrm{diff}(E,N,E_C,\alpha) = \mathrm{cpl}(E,N,E_C,\alpha)$
-- integral_flux: $E_\text{bounds,add} \cdot L_\mathrm{diff}(E_\text{bounds,lo}, N, E_C, \alpha) + 4 \cdot L_\mathrm{diff}(E_\text{bounds,half}, N, E_C, \alpha) + L_\mathrm{diff}(E_\text{bounds,hi}, N, E_C, \alpha)$
-
-### pgstat
-- background_model: $b = 0.5 \cdot \sqrt{MB^2 - 2 \sigma^2 \cdot (MB - 2 N_\mathrm{obs}) + \sigma^2} + N_\mathrm{back} - N_\mathrm{exp} - \sigma^2$
-- pgstat:  
-$L(idx \neq 0) = -\frac{(BM - N_\mathrm{back})^2}{2 \sigma^2} + N_\mathrm{obs} \cdot \log(BM + N_\mathrm{exp}) - BM - N_\mathrm{exp} + \log\Gamma(idx + 1) - 0.5 \cdot \log(2\pi) - \log(\sigma)$  
-$L(idx=0) = N_\mathrm{obs} \log(N_\mathrm{exp} - N_\mathrm{exp} + \log\Gamma(idx + 1))$
+- integral_flux (Simpson integral):  
+    $F = E_\mathrm{bounds,add} \cdot (\partial_t F(E_\mathrm{bounds,lo},\dots) + 4 \cdot \partial_t F(E_\mathrm{bounds,half},\dots) + \partial_t F(E_\mathrm{bounds,hi},\dots))$
 
 ## Stan models
+### cpl_simple_chunked:
+- data: usual
+- transformed data:
+    - ebounds_half
+    - ebounds_add
+    - $N_\text{total channels}$
+    - all_N
+    - keV to erg
+    - erg to keV
+    - $E_\mathrm{min}$
+    - $E_\mathrm{max}$
+    - $x_r$
+    - $x_i$
+- parameters:
+    - $\alpha$
+    - $\log E_C$ (observed energy)
+    - $\log F$
+- transformed parameters:
+    - $E_C$
+    - $F$
+    - $K = L \cdot \left( \int_{10}^{1000} dx\ x \cdot K \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/100} \right)^{-1}$
+- model:
+    - $\log y \sim \mathcal{N}(0,1)$
+    - $\log y_\sigma \sim \mathcal{N}(0,1)$
+    - $\alpha \sim \mathcal{N}(-1,0.5)$
+    - $\log E_C \sim \mathcal{N}(2,1)$
+    - target: sums over partial_log_like
+
 ### alpha_correlation
 - data:
     - $N_\mathrm{intervals}$
@@ -171,34 +200,6 @@ $L(idx=0) = N_\mathrm{obs} \log(N_\mathrm{exp} - N_\mathrm{exp} + \log\Gamma(idx
     - $\delta_\sigma \sim \mathcal{N}(0,5)$
     - log_like / target: ???
 - generated quantities: ???
-
-### cpl_simple_chunked:
-- data: usual
-- transformed data:
-    - ebounds_half
-    - ebounds_add
-    - $N_\text{total channels}$
-    - all_N
-    - keV to erg
-    - erg to keV
-    - $E_\mathrm{min}$
-    - $E_\mathrm{max}$
-    - $x_r$
-    - $x_i$
-- parameters:
-    - $\alpha$
-    - $\log E_C$ (observed energy)
-    - $\log F$
-- transformed parameters:
-    - $E_C$
-    - $F$
-    - $K = L \cdot \left( \int_{10}^{1000} dx\ x \cdot K \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/100} \right)^{-1}$
-- model:
-    - $\log y \sim \mathcal{N}(0,1)$
-    - $\log y_\sigma \sim \mathcal{N}(0,1)$
-    - $\alpha \sim \mathcal{N}(-1,0.5)$
-    - $\log E_C \sim \mathcal{N}(2,1)$
-    - target: sums over partial_log_like
 
 ### flux_ep_correlation
 - data: usual

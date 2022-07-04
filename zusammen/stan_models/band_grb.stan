@@ -1,3 +1,4 @@
+// Power Law
 real ggrb_int_pl(real alpha, real beta, real ec, real emin, real emax) {
 
   real pre = pow(alpha - beta, alpha - beta) * exp(beta - alpha) / pow(ec, beta);
@@ -13,6 +14,7 @@ real ggrb_int_pl(real alpha, real beta, real ec, real emin, real emax) {
 
 
 
+// Cut-off Power Law
 real ggrb_int_cpl(real alpha, real ec, real emin, real emax) {
 
   real i1 = gamma_q(2 + alpha, emin / ec) * tgamma(2 + alpha);
@@ -23,6 +25,7 @@ real ggrb_int_cpl(real alpha, real ec, real emin, real emax) {
 
 
 
+// use either pl or cpl
 real [] band_precalculation(real flux, real alpha, real  beta, real epeak, real emin, real emax) {
 
   real ec;

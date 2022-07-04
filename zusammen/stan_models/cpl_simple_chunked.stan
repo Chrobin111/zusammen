@@ -9,17 +9,18 @@ functions {
 
 data {
 
-  int<lower=1> N_intervals;
-  int max_n_echan;
-  int max_n_chan;
+  int<lower=1> N_intervals; // number of intervals
+  int max_n_echan; // number of maximum energy side channels
+  int max_n_chan; // maximum number of channels
 
   array[N_intervals] int<lower=0> N_dets; // number of detectors per data type
   array[N_intervals, max(N_dets)] int<lower=0> N_chan; // number of channels in each detector
   array[N_intervals,  max(N_dets)] int<lower=0> N_echan; // number of energy side channels in each detector
 
-  array[N_intervals] int grb_id;
-  int N_grbs;
+  array[N_intervals] int grb_id; // IDs of the GRBs
+  int N_grbs; // number of GRBs
 
+  // energy bounds to integrate
   array[N_intervals, max(N_dets)] vector[max_n_echan] ebounds_hi;
   array[N_intervals, max(N_dets)] vector[max_n_echan] ebounds_lo;
 
@@ -28,21 +29,21 @@ data {
   array[N_intervals, max(N_dets)] vector[max_n_chan] background_counts;
   array[N_intervals, max(N_dets)] vector[max_n_chan] background_errors;
 
-  array[N_intervals, max(N_dets), max_n_chan] int idx_background_zero;
-  array[N_intervals, max(N_dets), max_n_chan] int idx_background_nonzero;
+  array[N_intervals, max(N_dets), max_n_chan] int idx_background_zero; // index where the background is zero
+  array[N_intervals, max(N_dets), max_n_chan] int idx_background_nonzero; // index where the background is not zero
   array[N_intervals,max(N_dets)] int N_bkg_zero;
   array[N_intervals,max(N_dets)] int N_bkg_nonzero;
 
-  array[N_intervals, max(N_dets)] real exposure;
+  array[N_intervals, max(N_dets)] real exposure; // exposure time
 
-  array[N_intervals, max(N_dets)] matrix[max_n_chan, max_n_echan] response;
+  array[N_intervals, max(N_dets)] matrix[max_n_chan, max_n_echan] response; // DRM (contains energy dispersion, calibration and effektive area; .rsp file)
 
 
-  array[N_intervals, max(N_dets), max_n_chan] int mask;
-  array[N_intervals,max(N_dets)] int N_channels_used;
+  array[N_intervals, max(N_dets), max_n_chan] int mask; // mask to exclude channels
+  array[N_intervals,max(N_dets)] int N_channels_used; // number of channels used
 
-  vector[N_intervals] dl;
-  vector[N_intervals] z;
+  vector[N_intervals] dl; // luminosity distance
+  vector[N_intervals] z; // redshift
 
 
   // int N_gen_spectra;
@@ -68,8 +69,9 @@ transformed data {
   real emin = 10.; // minimum energy
   real emax = 1E4; // maximum energy
 
-  array[N_intervals, max(N_dets)] vector[max_n_echan] ebounds_add; // TODO: why over 6
-  array[N_intervals, max(N_dets)] vector[max_n_echan] ebounds_half; // center of enery bounds
+  // values for the Simpson integral
+  array[N_intervals, max(N_dets)] vector[max_n_echan] ebounds_add;
+  array[N_intervals, max(N_dets)] vector[max_n_echan] ebounds_half;
 
   array[N_intervals] int all_N;
 
@@ -94,17 +96,17 @@ transformed data {
 parameters {
 
   //vector<lower=-1.8, upper=1.>[N_intervals] alpha;
-  vector<lower=-1.9, upper=1>[N_intervals] alpha; // TODO: alpha?
-  vector<lower=0, upper=4>[N_intervals] log_ec; // TODO: Peak energy?
+  vector<lower=-1.9, upper=1>[N_intervals] alpha; // fit parameter
+  vector<lower=0, upper=4>[N_intervals] log_ec; // TODO: Peak energy? see GRB catalogue
   //vector<lower=-5,upper=1>[N_intervals] log_K;
 
   //vector<lower=0, upper=5>[N_intervals] log_epeak;
   // vector<lower=0>[N_intervals] log_epeak;
 
+  // intrinsic scattering for the energie flux
   real log_energy_flux_mu_raw;
   real<lower=0> log_energy_flux_sigma;
-
-  vector[N_intervals] log_energy_flux_raw; // raw energy flux norm
+  vector[N_intervals] log_energy_flux_raw;
 
 }
 
@@ -122,11 +124,12 @@ transformed parameters {
 
   log_energy_flux_mu = log_energy_flux_mu_raw - 7;
 
-  log_energy_flux = (log_energy_flux_mu) + log_energy_flux_raw * log_energy_flux_sigma;
+  log_energy_flux = log_energy_flux_mu + log_energy_flux_raw * log_energy_flux_sigma;
   energy_flux = pow(10, log_energy_flux);
   //vector[N_intervals] epeak;
   //vector[N_intervals] log_energy_flux;
 
+  // normalization
   for (n in 1:N_intervals){
 
     array[3] real theta = {1., alpha[n], ec[n]};
