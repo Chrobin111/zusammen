@@ -124,7 +124,7 @@ transformed parameters {
 
   log_energy_flux_mu = log_energy_flux_mu_raw - 7;
 
-  log_energy_flux = log_energy_flux_mu + log_energy_flux_raw * log_energy_flux_sigma;
+  log_energy_flux = (log_energy_flux_mu) + log_energy_flux_raw * log_energy_flux_sigma;
   energy_flux = pow(10, log_energy_flux);
   //vector[N_intervals] epeak;
   //vector[N_intervals] log_energy_flux;
