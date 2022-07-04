@@ -355,7 +355,7 @@ Samples decay time, duration, $E_\mathrm{peak}$ and $L$
 
 ### sim2fits
 - GRBProcessor: retrieves light curves from GRB and exports ogip
-- AnalysisBuilder: imports survey and processes GRBS
+- AnalysisBuilder: imports survey and processes GRBs
     - can export to: YAML
 
 

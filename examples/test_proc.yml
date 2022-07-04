@@ -4,15 +4,15 @@ SynthGRB_0:
   n_intervals: 5
   detectors:
     b1: 250-30000
-    n3: 10-900
+    n1: 10-900
     n4: 10-900
-    n5: 10-900
+    n6: 10-900
 SynthGRB_1:
   z: 1.53154473971862
   dir: /home/chrobin/Documents/zusammen/examples/SynthGRB_1
-  n_intervals: 7
+  n_intervals: 8
   detectors:
     b1: 250-30000
-    n2: 10-900
-    n3: 10-900
+    n0: 10-900
+    n4: 10-900
     n5: 10-900
