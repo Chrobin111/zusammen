@@ -13,7 +13,7 @@
 ### pgstat
 - background_model: $b = 0.5 \cdot \sqrt{MB^2 - 2 \sigma^2 \cdot (MB - 2 N_\mathrm{obs}) + \sigma^2} + N_\mathrm{back} - N_\mathrm{exp} - \sigma^2$
 - pgstat:  
-$PG(idx \neq 0) = -\frac{(BM - N_\mathrm{back})^2}{2 \sigma^2} + N_\mathrm{obs} \cdot \log(BM + N_\mathrm{exp}) - BM - N_\mathrm{exp} + \log\Gamma(idx + 1) - 0.5 \cdot \log(2\pi) - \log(\sigma)$  
+$PG(idx \neq 0) = -\frac{(b - N_\mathrm{back})^2}{2 \sigma^2} + N_\mathrm{obs} \cdot \log(b + N_\mathrm{exp}) - b - N_\mathrm{exp} + \log\Gamma(idx + 1) - 0.5 \cdot \log(2\pi) - \log(\sigma)$  
 $PG(idx=0) = N_\mathrm{obs} \log(N_\mathrm{exp}) - N_\mathrm{exp} + \log\Gamma(idx + 1)$
 
 ### cpl_interval_fold:
@@ -65,7 +65,7 @@ $PG(idx=0) = N_\mathrm{obs} \log(N_\mathrm{exp}) - N_\mathrm{exp} + \log\Gamma(i
 - transformed parameters:
     - $E_C$
     - $F$
-    - $K = L \cdot \left( \int_{10}^{1000} dx\ x \cdot K \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/100} \right)^{-1}$
+    - $K = F \cdot \left( \int_{10}^{1000} dx\ x \cdot K \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/100} \right)^{-1}$
 - model:
     - $\log y \sim \mathcal{N}(0,1)$
     - $\log y_\sigma \sim \mathcal{N}(0,1)$

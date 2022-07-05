@@ -97,13 +97,13 @@ parameters {
 
   //vector<lower=-1.8, upper=1.>[N_intervals] alpha;
   vector<lower=-1.9, upper=1>[N_intervals] alpha; // fit parameter
-  vector<lower=0, upper=4>[N_intervals] log_ec; // TODO: Peak energy? see GRB catalogue
+  vector<lower=0, upper=4>[N_intervals] log_ec; // cut-off energy
   //vector<lower=-5,upper=1>[N_intervals] log_K;
 
   //vector<lower=0, upper=5>[N_intervals] log_epeak;
   // vector<lower=0>[N_intervals] log_epeak;
 
-  // intrinsic scattering for the energie flux
+  // intrinsic scattering for the energy flux
   real log_energy_flux_mu_raw;
   real<lower=0> log_energy_flux_sigma;
   vector[N_intervals] log_energy_flux_raw;
@@ -124,7 +124,7 @@ transformed parameters {
 
   log_energy_flux_mu = log_energy_flux_mu_raw - 7;
 
-  log_energy_flux = (log_energy_flux_mu) + log_energy_flux_raw * log_energy_flux_sigma;
+  log_energy_flux = log_energy_flux_mu + log_energy_flux_raw * log_energy_flux_sigma;
   energy_flux = pow(10, log_energy_flux);
   //vector[N_intervals] epeak;
   //vector[N_intervals] log_energy_flux;
