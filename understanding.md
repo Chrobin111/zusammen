@@ -6,9 +6,9 @@
 - cpl: $N \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/E_C}$
 - cpl_indi: $K \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/E_C}$
 - cpl_flux_integrand: $x \cdot$ cpl_indi $(x,\theta)$
-- differential_flux: $\partial_t L(E,N,E_C,\alpha) = \mathrm{cpl}(E,N,E_C,\alpha)$
+- differential_flux: $\partial_E L(E,N,E_C,\alpha) = \mathrm{cpl}(E,N,E_C,\alpha)$
 - integral_flux (Simpson integral):  
-    $F = E_\text{bounds,add} \cdot (\partial_t L(E_\text{bounds,lo}, N, E_C, \alpha) + 4 \cdot \partial_t L(E_\text{bounds,half}, N, E_C, \alpha) + \partial_t L(E_\text{bounds,hi}, N, E_C, \alpha))$
+    $F = E_\text{bounds,add} \cdot (\partial_E L(E_\text{bounds,lo}, N, E_C, \alpha) + 4 \cdot \partial_t L(E_\text{bounds,half}, N, E_C, \alpha) + \partial_t L(E_\text{bounds,hi}, N, E_C, \alpha))$
 
 ### pgstat
 - background_model: $b = 0.5 \cdot \sqrt{MB^2 - 2 \sigma^2 \cdot (MB - 2 N_\mathrm{obs}) + \sigma^2} + N_\mathrm{back} - N_\mathrm{exp} - \sigma^2$
@@ -36,13 +36,13 @@ $PG(idx=0) = N_\mathrm{obs} \log(N_\mathrm{exp}) - N_\mathrm{exp} + \log\Gamma(i
     \end{cases}$  
     $pre = (\alpha-\beta)^{\alpha-\beta} \cdot \mathrm{e}^{\beta-\alpha}$
 - differential_flux:  
-    $\partial_t F^i = \mathrm{norm} \cdot o^i$  
+    $\partial_E F^i = \mathrm{norm} \cdot o^i$  
     $o^i = \begin{cases}
         (E/E_c)^\alpha \cdot \mathrm{e}^{-E/E_c}, & E < E\mathrm{split} \\
         pre \cdot (E/E_c)^\beta, & \mathrm{else}
     \end{cases}$
 - integral_flux (Simpson integral):  
-    $F = E_\mathrm{bounds,add} \cdot (\partial_t F(E_\mathrm{bounds,lo},\dots) + 4 \cdot \partial_t F(E_\mathrm{bounds,half},\dots) + \partial_t F(E_\mathrm{bounds,hi},\dots))$
+    $F = E_\mathrm{bounds,add} \cdot (\partial_E F(E_\mathrm{bounds,lo},\dots) + 4 \cdot \partial_t F(E_\mathrm{bounds,half},\dots) + \partial_t F(E_\mathrm{bounds,hi},\dots))$
 
 ## Stan models
 ### cpl_simple_chunked:
