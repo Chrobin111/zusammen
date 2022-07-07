@@ -60,15 +60,15 @@ $PG(idx=0) = N_\mathrm{obs} \log(N_\mathrm{exp}) - N_\mathrm{exp} + \log\Gamma(i
     - $x_i$
 - parameters:
     - $\alpha$
-    - $\log E_C$ (observed energy)
+    - $\log E_C$ (cut-off energy)
     - $\log F$
 - transformed parameters:
     - $E_C$
     - $F$
-    - $K = F \cdot \left( \int_{10}^{1000} dx\ x \cdot K \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/100} \right)^{-1}$
+    - $K = F / \int_{10}^{1000} dx\ x \cdot K \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/100}$
 - model:
-    - $\log y \sim \mathcal{N}(0,1)$
-    - $\log y_\sigma \sim \mathcal{N}(0,1)$
+    - $\log F \sim \mathcal{N}(0,1)$
+    - $\log F_\sigma \sim \mathcal{N}(0,1)$
     - $\alpha \sim \mathcal{N}(-1,0.5)$
     - $\log E_C \sim \mathcal{N}(2,1)$
     - target: sums over partial_log_like

@@ -1,4 +1,3 @@
-// TODO: Understand after pgstat and band_grb
 real partial_log_like(int[] n_slice, int start, int end, vector alpha, vector ec, vector K, vector[,] observed_counts, vector[,] background_counts, vector[,] background_errors, int [,,] mask, int [,] N_channels_used, real [,] exposure, vector[,] ebounds_lo, vector[,] ebounds_hi, vector[,] ebounds_add, vector[,] ebounds_half, matrix[,] response, int [,,] idx_background_zero, int [,,] idx_background_nonzero, int [,] N_bkg_zero, int [,] N_bkg_nonzero, int [] N_dets, int [,] N_chan, int [,] N_echan, int max_n_chan, real emin, real emax ) {
 
   real log_like = 0;
