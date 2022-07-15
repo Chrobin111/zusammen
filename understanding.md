@@ -6,9 +6,9 @@
 - cpl: $N \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/E_C}$
 - cpl_indi: $K \cdot (E/100)^\alpha \cdot \mathrm{e}^{-E/E_C}$
 - cpl_flux_integrand: $x \cdot$ cpl_indi $(x,\theta)$
-- differential_flux: $\partial_E L(E,N,E_C,\alpha) = \mathrm{cpl}(E,N,E_C,\alpha)$
+- differential_flux: $\partial_E F(E,N,E_C,\alpha) = \mathrm{cpl}(E,N,E_C,\alpha)$
 - integral_flux (Simpson integral):  
-    $F = E_\text{bounds,add} \cdot (\partial_E L(E_\text{bounds,lo}, N, E_C, \alpha) + 4 \cdot \partial_t L(E_\text{bounds,half}, N, E_C, \alpha) + \partial_t L(E_\text{bounds,hi}, N, E_C, \alpha))$
+    $F_\mathrm{tot} = E_\text{bounds,add} \cdot (\partial_E F(E_\text{bounds,lo}, N, E_C, \alpha) + 4 \cdot \partial_E F(E_\text{bounds,half}, N, E_C, \alpha) + \partial_E F(E_\text{bounds,hi}, N, E_C, \alpha))$
 
 ### pgstat
 - background_model: $b = 0.5 \cdot \sqrt{MB^2 - 2 \sigma^2 \cdot (MB - 2 N_\mathrm{obs}) + \sigma^2} + N_\mathrm{back} - N_\mathrm{exp} - \sigma^2$
@@ -18,7 +18,7 @@ $PG(idx=0) = N_\mathrm{obs} \log(N_\mathrm{exp}) - N_\mathrm{exp} + \log\Gamma(i
 
 ### cpl_interval_fold:
 - partial_log_like:  
-    $N_\mathrm{exp}^i = R^{ij} \cdot F_j \cdot t_\mathrm{exposure}$  
+    $N_\mathrm{exp}^i = R^{ij} \cdot F_{\mathrm{tot},j} \cdot t_\mathrm{exposure}$  
     $L = \sum_i PG(N_\mathrm{obs}^i,N_\mathrm{back}^i,\sigma^i,N_\mathrm{exp}^i,idx_0^i,idx^i)$
 
 ### band_grb
