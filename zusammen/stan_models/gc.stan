@@ -24,7 +24,7 @@ parameters {
 
   // latent variables
   vector<lower=-2,upper=5>[N] Ep_true; // true peak energy
-  vector[N] FE_true; // true peak energy
+  vector[N] FE_true; // true flux
 
   vector<lower=50>[Ngroups] Nrest; // GC normalization
   vector<lower=0>[Ngroups] gamma; // exponent
