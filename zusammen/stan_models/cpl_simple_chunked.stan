@@ -102,7 +102,7 @@ parameters {
   //vector<lower=0, upper=5>[N_intervals] log_epeak;
   //vector<lower=0>[N_intervals] log_epeak;
 
-  // intrinsic scattering for the energy flux
+  // non-central parameterization of the energy flux
   real log_energy_flux_mu_raw;
   real<lower=0> log_energy_flux_sigma;
   vector[N_intervals] log_energy_flux_raw;
