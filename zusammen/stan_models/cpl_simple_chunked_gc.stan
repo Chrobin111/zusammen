@@ -56,13 +56,14 @@ data {
 
 
 transformed data {
+  // TODO: ???
   real x_r[0];
   int x_i[0];
 
   real kev2erg = 1.6021766e-9; // keV to erg conversion
   real erg2kev = 6.24151e8; // erg to keV conversion
 
-  //vector[N_intervals] dl2 = square(dl); // dl squared
+  vector[N_intervals] dl2 = square(dl); // dl squared
   int N_total_channels = 0; // number of channels
   real emin = 10.; // minimum energy
   real emax = 1E4; // maximum energy
@@ -93,24 +94,23 @@ transformed data {
 
 parameters {
 
+  //vector<lower=-1.8, upper=1.>[N_intervals] alpha;
   vector<lower=-1.9, upper=1>[N_intervals] alpha; // fit parameter
   vector<lower=0, upper=4>[N_intervals] log_ec; // cut-off energy
+  //vector<lower=-5,upper=1>[N_intervals] log_K;
 
-  // TODO: intrinsic scattering for the energy flux?
+  //vector<lower=0, upper=5>[N_intervals] log_epeak;
+  //vector<lower=0>[N_intervals] log_epeak;
+
+  // non-central parameterization of the energy flux
   real log_energy_flux_mu_raw;
   real<lower=0> log_energy_flux_sigma;
   vector[N_intervals] log_energy_flux_raw;
 
 
-  // GC
-
-  // latent variables
-  vector<lower=-2,upper=5>[N_intervals] epeak_true; // true peak energy
-  vector[N_intervals] energy_flux_true; // true flux
-
-  real<lower=50> Nrest; // GC normalization
-  real<lower=0> gamma; // exponent
-  real<lower=0> int_scatter_sq; // intrinsic scatter squared
+  vector<lower=50> Nrest; // GC normalization
+  vector<lower=0> gamma; // exponent
+  vector<lower=0> int_scatter_sq; // intrinsic scatter squared
 
   // hyperpriors
   real<lower=0> gamma_mu_meta;
@@ -136,7 +136,8 @@ transformed parameters {
 
   log_energy_flux = log_energy_flux_mu + log_energy_flux_raw * log_energy_flux_sigma;
   energy_flux = pow(10, log_energy_flux);
-  vector[N_intervals] epeak;
+  //vector[N_intervals] epeak;
+  //vector[N_intervals] log_energy_flux;
 
   // normalization
   for (n in 1:N_intervals){
@@ -152,7 +153,8 @@ transformed parameters {
   }
 
 
-  real<lower=0> int_scatter = sqrt(int_scatter_sq); // intrinsic scatter
+  vector<lower=0> int_scatter; // intrinsic scatter
+  int_scatter = sqrt(int_scatter_sq);
 
 }
 
@@ -161,6 +163,14 @@ model {
 
   int grainsize = 1;
 
+  // log_epeak ~ normal(2.,1);
+
+  log_energy_flux ~ normal(
+    Nrest - ( 1.099 + 2 * log10(dl) )
+      + gamma * ( log10(1 + z) + epeak - 2 ),
+    int_scatter
+  );
+
   log_energy_flux_mu_raw ~ std_normal();
   log_energy_flux_sigma ~ std_normal();
 
@@ -168,33 +178,12 @@ model {
 
   log_ec ~ normal(2.,1);
 
+  // log_K ~ normal(-1, 1);
+
   // print(alpha);
   // print(log_ec);
   // print(log_K);
 
   target += reduce_sum(partial_log_like, all_N, grainsize,  alpha,  ec,  K,  observed_counts,  background_counts, background_errors,  mask, N_channels_used,exposure,  ebounds_lo,  ebounds_hi,  ebounds_add,  ebounds_half, response, idx_background_zero, idx_background_nonzero, N_bkg_zero, N_bkg_nonzero, N_dets,  N_chan,  N_echan,  max_n_chan,  emin,  emax) ;
-
-
-  gamma_sig_meta ~ cauchy(0., 2.5);
-  Nrest_sig_meta ~ cauchy(0., 2.5);
-  gamma_mu_meta ~ normal(0, maxSlope);
-  Nrest_mu_meta ~ normal(52, 5);
-  gamma ~ normal(gamma_mu_meta, gamma_sig_meta);
-  Nrest ~ normal(Nrest_mu_meta, Nrest_sig_meta);
-  int_scatter_sq ~ cauchy(0, 2.5)
-  epeak_true ~ uniform(-2, 5);
-  epeak ~ normal(epeak_true, epeak_sig); // TODO
-
-  for (n in 1:N_intervals){
-
-    energy_flux_true[n] ~ normal(
-      Nrest - ( 1.099 + 2 * log10(dl) ) // DL = luminosity distance?
-        + gamma * ( log10(1+z) + epeak_true[n] - 2 ),
-      int_scatter
-    );
-
-  }
-
-  energy_flux ~ normal(energy_flux_true,energy_flux_sig); // TODO
 
 }
