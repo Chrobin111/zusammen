@@ -70,7 +70,7 @@ model{
       if (known[i] = 0){
 
           FE_true[i] ~ normal(
-              Nrest[group[i]] - ( 1.099 + 2 * log10(DL(z[unknown_group[i]])) ) // DL = luminosity distance?
+              Nrest[group[i]] - ( 1.099 + 2 * log10(DL(z[unknown_group[i]])) )
                   + gamma[group[i]] * ( log10(1 + z[unknown_group[i]]) + Ep_true[i] - 2 ),
               int_scatter[group[i]]
           );
