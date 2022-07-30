@@ -32,7 +32,7 @@ real cpl_indi(real energy, real K, real alpha, real ec) {
 
 
 
-real cpl_flux_integrand(real x, real xc, array[] real theta, array[] real x_r, array[] int x_i) {
+real cpl_flux_integrand(real x, real xc, real[] theta, real[] x_r, int[] x_i) {
 
   real out = x * cpl_indi(x, theta[1], theta[2], theta[3]);
 
