@@ -58,8 +58,8 @@ data {
 
 
 transformed data {
-  array[0] real x_r;
-  array[0] int x_i;
+  real x_r[0];
+  int x_i[0];
 
   real kev2erg = 1.6021766e-9; // keV to erg conversion
   real erg2kev = 6.24151e8; // erg to keV conversion
@@ -173,9 +173,7 @@ model {
   log_Nrest ~ normal(log_Nrest_mu_meta, log_Nrest_sig_meta);
   int_scatter_sq ~ cauchy(0, 2.5);
 
-  for (n in 1:N_intervals){
-    log_energy_flux[n] ~ normal(log_Nrest - (1.099 + 2 * log10(dl)) + gamma * (log10((1 + z) * epeak[n]) - 2), int_scatter);
-  }
+  log_energy_flux ~ normal(log_Nrest - (1.099 + 2 * log10(dl)) + gamma * (log10(1 + z) + log10(epeak) - 2), int_scatter);
 
   log_energy_flux_mu_raw ~ std_normal();
   log_energy_flux_sigma ~ std_normal();
