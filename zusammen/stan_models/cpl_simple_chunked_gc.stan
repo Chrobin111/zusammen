@@ -109,9 +109,9 @@ parameters {
   vector[N_intervals] log_energy_flux_raw;
 
 
-  real<lower=50> log_Nrest; // GC normalization
-  real<lower=0> gamma; // exponent
-  real<lower=0> int_scatter_sq; // intrinsic scatter squared
+  vector<lower=50>[N_grbs] log_Nrest; // GC normalization
+  vector<lower=0>[N_grbs] gamma; // exponent
+  vector<lower=0>[N_grbs] int_scatter_sq; // intrinsic scatter squared
 
   // hyperpriors
   real<lower=0> gamma_mu_meta;
@@ -153,8 +153,10 @@ transformed parameters {
   }
 
 
-  real<lower=0> int_scatter; // intrinsic scatter
-  int_scatter = sqrt(int_scatter_sq);
+  vector<lower=0>[N_grbs] int_scatter; // intrinsic scatter
+  for(n in 1:N_grbs){
+    int_scatter[n] = sqrt(int_scatter_sq[n]);
+  }
 
 }
 
@@ -173,7 +175,12 @@ model {
   log_Nrest ~ normal(log_Nrest_mu_meta, log_Nrest_sig_meta);
   int_scatter_sq ~ cauchy(0, 2.5);
 
-  log_energy_flux ~ normal(log_Nrest - (1.099 + 2 * log10(dl)) + gamma * (log10(1 + z) + log10(epeak) - 2), int_scatter);
+  for(n in 1:N_intervals){
+    log_energy_flux[n] ~ normal(
+      log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl[n])) + gamma[grb_id[n]] * (log10((1 + z[n]) * epeak[n]) - 2),
+      int_scatter[grb_id[n]]
+    );
+  }
 
   log_energy_flux_mu_raw ~ std_normal();
   log_energy_flux_sigma ~ std_normal();

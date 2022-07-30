@@ -2,7 +2,7 @@ data{
 
   int<lower=0> N; // number of GRBs
   int<lower=0> Nunknown; // number of GRBs with unknown redshift
-  int<lower=0> Ngroups; // number of groups TODO
+  int<lower=0> Ngroups; // number of groups
 
   vector[N] z_known; // known redshifts
   vector[N] Nz;
