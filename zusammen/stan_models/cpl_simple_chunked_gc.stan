@@ -44,6 +44,8 @@ data {
   vector[N_intervals] dl; // luminosity distance
   vector[N_intervals] z; // redshift
 
+  //real maxSlope; // maximum value for gamma
+
 
   // int N_gen_spectra;
   // vector[N_gen_spectra] model_energy;
@@ -56,8 +58,8 @@ data {
 
 
 transformed data {
-  real x_r[0];
-  int x_i[0];
+  array[0] real x_r;
+  array[0] int x_i;
 
   real kev2erg = 1.6021766e-9; // keV to erg conversion
   real erg2kev = 6.24151e8; // erg to keV conversion
@@ -107,15 +109,15 @@ parameters {
   vector[N_intervals] log_energy_flux_raw;
 
 
-  vector<lower=50> Nrest; // GC normalization
-  vector<lower=0> gamma; // exponent
-  vector<lower=0> int_scatter_sq; // intrinsic scatter squared
+  real<lower=50> log_Nrest; // GC normalization
+  real<lower=0> gamma; // exponent
+  real<lower=0> int_scatter_sq; // intrinsic scatter squared
 
   // hyperpriors
   real<lower=0> gamma_mu_meta;
-  real Nrest_mu_meta;
+  real log_Nrest_mu_meta;
   real<lower=0> gamma_sig_meta;
-  real<lower=0> Nrest_sig_meta;
+  real<lower=0> log_Nrest_sig_meta;
 
 }
 
@@ -124,6 +126,7 @@ parameters {
 transformed parameters {
 
   vector[N_intervals] ec = pow(10, log_ec);
+  vector[N_intervals] epeak;
   vector[N_intervals] log_energy_flux;
   real log_energy_flux_mu;
   vector[N_intervals] energy_flux;
@@ -135,8 +138,6 @@ transformed parameters {
 
   log_energy_flux = log_energy_flux_mu + log_energy_flux_raw * log_energy_flux_sigma;
   energy_flux = pow(10, log_energy_flux);
-  //vector[N_intervals] epeak;
-  //vector[N_intervals] log_energy_flux;
 
   // normalization
   for (n in 1:N_intervals){
@@ -152,7 +153,7 @@ transformed parameters {
   }
 
 
-  vector<lower=0> int_scatter; // intrinsic scatter
+  real<lower=0> int_scatter; // intrinsic scatter
   int_scatter = sqrt(int_scatter_sq);
 
 }
@@ -164,11 +165,17 @@ model {
 
   // log_epeak ~ normal(2.,1);
 
-  log_energy_flux ~ normal(
-    Nrest - ( 1.099 + 2 * log10(dl) )
-      + gamma * ( log10(1 + z) + epeak - 2 ),
-    int_scatter
-  );
+  gamma_sig_meta ~ cauchy(0., 2.5);
+  log_Nrest_sig_meta ~ cauchy(0., 2.5);
+  gamma_mu_meta ~ normal(0, 5);//maxSlope);
+  log_Nrest_mu_meta ~ normal(52, 5);
+  gamma ~ normal(gamma_mu_meta, gamma_sig_meta);
+  log_Nrest ~ normal(log_Nrest_mu_meta, log_Nrest_sig_meta);
+  int_scatter_sq ~ cauchy(0, 2.5);
+
+  for (n in 1:N_intervals){
+    log_energy_flux[n] ~ normal(log_Nrest - (1.099 + 2 * log10(dl)) + gamma * (log10((1 + z) * epeak[n]) - 2), int_scatter);
+  }
 
   log_energy_flux_mu_raw ~ std_normal();
   log_energy_flux_sigma ~ std_normal();
