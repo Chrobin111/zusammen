@@ -167,7 +167,7 @@ model {
 
   gamma_sig_meta ~ cauchy(0., 2.5);
   log_Nrest_sig_meta ~ cauchy(0., 2.5);
-  gamma_mu_meta ~ normal(0, 5);//maxSlope);
+  gamma_mu_meta ~ normal(0, 10);//maxSlope);
   log_Nrest_mu_meta ~ normal(52, 5);
   gamma ~ normal(gamma_mu_meta, gamma_sig_meta);
   log_Nrest ~ normal(log_Nrest_mu_meta, log_Nrest_sig_meta);
