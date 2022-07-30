@@ -133,6 +133,9 @@ dmypy.json
 
 # hdf5
 *.h5
+*.yml
+*.rsp
+*.pha
 
 # Dask
 .ipynb_checkpoints/
@@ -144,3 +147,6 @@ dataframes/data
 
 # VSCode
 .vscode/
+
+# Simulations
+examples/SynthGRB_*
