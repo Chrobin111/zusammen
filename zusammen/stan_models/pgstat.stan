@@ -13,7 +13,7 @@ vector background_model(vector observed_counts, vector background_counts, vector
 }
 
 
-vector pgstat(vector observed_counts, vector background_counts, vector background_error, vector expected_model_counts, int[] idx_background_zero, int[] idx_background_nonzero) {
+vector pgstat(vector observed_counts, vector background_counts, vector background_error, vector expected_model_counts, array[] int idx_background_zero, array[] int idx_background_nonzero) {
 
   int N = num_elements(expected_model_counts);
   vector[N] log_likes;
