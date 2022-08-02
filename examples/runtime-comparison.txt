@@ -1,4 +1,6 @@
-without vectorization: ~4h
+without vectorization:
+    without optimization flags: 3h 53min
+    with experimental optimizations (--Oexperimental): 3h 19min
 with vectorization:
     without optimization flags: 3h 44min
     with simple optimizations (--O1): 3h 38min
