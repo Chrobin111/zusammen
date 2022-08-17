@@ -1,8 +1,3 @@
-import warnings
-
-warnings.simplefilter("ignore")
-warnings.filterwarnings("ignore")
-
 from cosmogrb.universe.survey import Survey
 
 import os, sys
@@ -16,8 +11,6 @@ from zusammen import AnalysisBuilder, DataSet
 from zusammen.spectral_plot import display_posterior_model_counts
 
 import arviz as av
-
-update_logging_level("FATAL")
 
 
 survey = Survey.from_file("data/survey.h5")
