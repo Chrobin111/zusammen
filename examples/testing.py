@@ -26,7 +26,7 @@ m.build_model()
 
 data = ds.to_stan_dict()
 
-n_threads = 3
+n_threads = 10
 n_chains = 2
 
 fit = m.model.sample(
@@ -36,12 +36,12 @@ fit = m.model.sample(
     # inits= {'alpha':-1.},
     threads_per_chain=n_threads,
     seed=1234,
-    iter_warmup=1000,
-    iter_sampling=500,
+    iter_warmup=2000,
+    iter_sampling=1000,
     max_treedepth=12,
     show_progress=True,
 )
 
 
 res = av.from_cmdstanpy(fit)
-res.to_netcdf("inference_data/test_inference_data_energy_flux_5.nc")
+res.to_netcdf("inference_data/test_inference_data_energy_flux_6.nc")
