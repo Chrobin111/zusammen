@@ -15,7 +15,8 @@ from zusammen.synthetic_populations.aux_samplers import (
     LumSampler,
     EpeakObsSampler,
 )
-from corr_cpl.corr_cpl_grb import GBMGRB_CORR_CPL, GBM_CORR_CPL_Universe
+from corr_cpl.corr_cpl_grb import GBMGRB_CORR_CPL
+from corr_cpl.corr_cpl_universe import GBM_CORR_CPL_Universe
 
 
 pop_gen = popsynth.populations.SFRPopulation(
