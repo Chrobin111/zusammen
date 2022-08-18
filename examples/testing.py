@@ -43,4 +43,4 @@ fit = m.model.sample(
 
 
 res = av.from_cmdstanpy(fit)
-res.to_netcdf("inference_data/test_inference_data_energy_flux_6.nc")
+res.to_netcdf("inference_data/test_inference_data_exact_3.nc")
