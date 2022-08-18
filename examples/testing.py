@@ -26,7 +26,7 @@ m.build_model()
 
 data = ds.to_stan_dict()
 
-n_threads = 10
+n_threads = 5
 n_chains = 2
 
 fit = m.model.sample(
