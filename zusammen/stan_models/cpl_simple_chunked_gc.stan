@@ -176,9 +176,7 @@ model {
   log_ec ~ normal(2.,1);
 
   for (n in 1:N_intervals){
-    log_energy_flux[n] ~ normal(
-      log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl[n])) + gamma[grb_id[n]] * (log10((1 + z[n]) * epeak[n]) - 2),
-      0);
+    log_energy_flux[n] = log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl[n])) + gamma[grb_id[n]] * (log10((1 + z[n]) * epeak[n]) - 2);
   }
 
   // log_K ~ normal(-1, 1);
