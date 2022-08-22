@@ -145,7 +145,6 @@ transformed parameters {
 
     epeak[n] = (2+alpha[n]) * pow(10, log_ec[n]);
 
-    log_energy_flux[n] = log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl[n])) + gamma[grb_id[n]] * (log10((1 + z[n]) * epeak[n]) - 2);
 
     //print(theta);
     K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
@@ -175,6 +174,12 @@ model {
   alpha ~ normal(-1,.5);
 
   log_ec ~ normal(2.,1);
+
+  for (n in 1:N_intervals){
+    log_energy_flux[n] ~ normal(
+      log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl[n])) + gamma[grb_id[n]] * (log10((1 + z[n]) * epeak[n]) - 2),
+      0);
+  }
 
   // log_K ~ normal(-1, 1);
 
