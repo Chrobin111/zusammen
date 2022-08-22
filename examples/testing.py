@@ -20,7 +20,7 @@ ds = DataSet.from_yaml("test_proc.yml")
 
 m = get_model("cpl_simple_chunked_gc")
 m.clean_model()
-m.build_model()
+m.build_model(opt_exp=True)
 
 
 data = ds.to_stan_dict()
