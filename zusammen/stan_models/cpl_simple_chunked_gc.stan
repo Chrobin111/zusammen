@@ -143,8 +143,9 @@ transformed parameters {
 
     array[3] real theta = {1., alpha[n], ec[n]};
 
-    epeak[n] = (2+alpha[n]) * pow(10, log_ec[n]);
+    log_epeak[n] = log10(2+alpha[n]) * log_ec[n];
 
+    log_energy_flux[n] = log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl[n])) + gamma[grb_id[n]] * (log10(1 + z[n]) + log_epeak[n] - 2);
 
     //print(theta);
     K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
@@ -163,7 +164,7 @@ model {
 
   gamma_sig_meta ~ normal(0., 2.5);
   log_Nrest_sig_meta ~ normal(0., 2.5);
-  gamma_mu_meta ~ normal(0, 5);//maxSlope);
+  gamma_mu_meta ~ normal(0, 5);
   log_Nrest_mu_meta ~ normal(52, 5);
   gamma ~ normal(gamma_mu_meta, gamma_sig_meta);
   log_Nrest ~ normal(log_Nrest_mu_meta, log_Nrest_sig_meta);
@@ -174,10 +175,6 @@ model {
   alpha ~ normal(-1,.5);
 
   log_ec ~ normal(2.,1);
-
-  for (n in 1:N_intervals){
-    log_energy_flux[n] = log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl[n])) + gamma[grb_id[n]] * (log10((1 + z[n]) * epeak[n]) - 2);
-  }
 
   // log_K ~ normal(-1, 1);
 
