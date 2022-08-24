@@ -125,7 +125,7 @@ parameters {
 transformed parameters {
 
   vector[N_intervals] ec = pow(10, log_ec);
-  vector[N_intervals] epeak;
+  vector[N_intervals] log_epeak;
   vector[N_intervals] log_energy_flux;
   real log_energy_flux_mu;
   vector[N_intervals] energy_flux;
