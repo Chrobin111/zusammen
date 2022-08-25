@@ -126,8 +126,8 @@ transformed parameters {
 
   vector[N_intervals] ec = pow(10, log_ec);
   vector[N_intervals] log_epeak;
-  vector[N_intervals] log_energy_flux;
   //real log_energy_flux_mu;
+  vector[N_intervals] log_energy_flux;
   vector[N_intervals] energy_flux;
 
   vector[N_intervals] K;
@@ -145,14 +145,13 @@ transformed parameters {
     log_epeak[n] = log10(2+alpha[n]) * log_ec[n];
 
     log_energy_flux[n] = log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl[n])) + gamma[grb_id[n]] * (log10(1 + z[n]) + log_epeak[n] - 2);
-
+    energy_flux[n] = pow(10, log_energy_flux[n]);
+     
     //print(theta);
     K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
     //K[n] = erg2kev * energy_flux[n] * inv( ggrb_int_cpl(alpha[n], ec[n], 10., 1.e3) );
 
   }
-
-  energy_flux = pow(10, log_energy_flux);
 
 }
 
