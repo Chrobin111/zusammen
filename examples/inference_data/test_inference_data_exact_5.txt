@@ -1,0 +1,19 @@
+Processing csv files: /tmp/tmp6_60m6kc/cpl_simple_chunked_gc7obxe876/cpl_simple_chunked_gc-20220826105602_1.csv, /tmp/tmp6_60m6kc/cpl_simple_chunked_gc7obxe876/cpl_simple_chunked_gc-20220826105602_2.csv
+
+Checking sampler transitions treedepth.
+Treedepth satisfactory for all transitions.
+
+Checking sampler transitions for divergences.
+237 of 2000 (11.85%) transitions ended with a divergence.
+These divergent transitions indicate that HMC is not fully able to explore the posterior distribution.
+Try increasing adapt delta closer to 1.
+If this doesn't remove all divergences, try to reparameterize the model.
+
+Checking E-BFMI - sampler transitions HMC potential energy.
+E-BFMI satisfactory.
+
+Effective sample size satisfactory.
+
+Split R-hat values satisfactory all parameters.
+
+Processing complete.
