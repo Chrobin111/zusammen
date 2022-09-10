@@ -64,7 +64,7 @@ transformed data {
   real kev2erg = 1.6021766e-9; // keV to erg conversion
   real erg2kev = 6.24151e8; // erg to keV conversion
 
-  vector[N_intervals] dl2 = square(dl); // dl squared
+  //vector[N_intervals] dl2 = square(dl); // dl squared
   int N_total_channels = 0; // number of channels
   real emin = 10.; // minimum energy
   real emax = 1E4; // maximum energy
@@ -96,8 +96,8 @@ transformed data {
 parameters {
 
   //vector<lower=-1.8, upper=1.>[N_intervals] alpha;
-  vector<lower=-1.9, upper=1>[N_intervals] alpha; // fit parameter
-  vector<lower=0, upper=4>[N_intervals] log_ec; // cut-off energy
+  vector<lower=-10, upper=5>[N_intervals] alpha; // fit parameter
+  vector<lower=-2, upper=6>[N_intervals] log_ec; // cut-off energy
   //vector<lower=-5,upper=1>[N_intervals] log_K;
 
   //vector<lower=0, upper=5>[N_intervals] log_epeak;
@@ -109,7 +109,7 @@ parameters {
   //vector[N_intervals] log_energy_flux_raw;
 
 
-  vector<lower=50>[N_grbs] log_Nrest; // GC normalization
+  vector<lower=50>[N_grbs] log_Nrest; // GC normalization <lower=40, upper=65> 
   vector<lower=0>[N_grbs] gamma; // exponent
 
   // hyperpriors
@@ -142,11 +142,11 @@ transformed parameters {
 
     array[3] real theta = {1., alpha[n], ec[n]};
 
-    log_epeak[n] = log10(2+alpha[n]) * log_ec[n];
+    log_epeak[n] = log10(2+alpha[n]) + log_ec[n];
 
     log_energy_flux[n] = log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl[n])) + gamma[grb_id[n]] * (log10(1 + z[n]) + log_epeak[n] - 2);
     energy_flux[n] = pow(10, log_energy_flux[n]);
-     
+
     //print(theta);
     K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
     //K[n] = erg2kev * energy_flux[n] * inv( ggrb_int_cpl(alpha[n], ec[n], 10., 1.e3) );
@@ -162,19 +162,18 @@ model {
 
   // log_epeak ~ normal(2.,1);
 
+  alpha ~ normal(-1,.5);
+  log_ec ~ normal(2.,1);
+
   gamma_sig_meta ~ normal(0., 2.5);
   log_Nrest_sig_meta ~ normal(0., 2.5);
-  gamma_mu_meta ~ normal(0, 5);
+  gamma_mu_meta ~ normal(0, 5); // vary?
   log_Nrest_mu_meta ~ normal(52, 5);
   gamma ~ normal(gamma_mu_meta, gamma_sig_meta);
   log_Nrest ~ normal(log_Nrest_mu_meta, log_Nrest_sig_meta);
 
   //log_energy_flux_mu_raw ~ std_normal();
   //log_energy_flux_sigma ~ std_normal();
-
-  alpha ~ normal(-1,.5);
-
-  log_ec ~ normal(2.,1);
 
   // log_K ~ normal(-1, 1);
 
