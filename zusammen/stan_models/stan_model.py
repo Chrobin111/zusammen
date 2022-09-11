@@ -11,6 +11,7 @@ _available_models[
     "cpl_simple_chunked_gc_vectorized"
 ] = "cpl_simple_chunked_gc_vectorized.stan"
 _available_models["cpl_simple_chunked_gc_cauchy"] = "cpl_simple_chunked_gc_cauchy.stan"
+_available_models["cpl_simple_chunked_gc_relaxed"] = "cpl_simple_chunked_gc_relaxed.stan"
 
 
 class StanModel(object):
