@@ -109,7 +109,7 @@ parameters {
   //vector[N_intervals] log_energy_flux_raw;
 
 
-  vector<lower=50>[N_grbs] log_Nrest; // GC normalization <lower=40, upper=65> 
+  vector<lower=50>[N_grbs] log_Nrest; // GC normalization <lower=40, upper=65>
   vector<lower=0>[N_grbs] gamma; // exponent
 
   // hyperpriors (relaxed)

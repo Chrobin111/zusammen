@@ -6,6 +6,7 @@ import cmdstanpy
 _available_models = {}
 
 _available_models["cpl_simple_chunked"] = "cpl_simple_chunked.stan"
+_available_models["cpl_simple_chunked_centered"] = "cpl_simple_chunked_centered.stan"
 _available_models["cpl_simple_chunked_gc"] = "cpl_simple_chunked_gc.stan"
 _available_models[
     "cpl_simple_chunked_gc_vectorized"

@@ -102,10 +102,10 @@ parameters {
   //vector<lower=0>[N_intervals] log_epeak;
 
   // non-central parameterization of the energy flux
-  real log_energy_flux_mu_raw;
-  real<lower=0> log_energy_flux_sigma;
-  vector[N_intervals] log_energy_flux_raw;
-  #vector[N_intervals] log_energy_flux;
+  //real log_energy_flux_mu_raw;
+  //real<lower=0> log_energy_flux_sigma;
+  //vector[N_intervals] log_energy_flux_raw;
+  vector[N_intervals] log_energy_flux;
 
 }
 
@@ -114,16 +114,16 @@ parameters {
 transformed parameters {
 
   vector[N_intervals] ec = pow(10, log_ec);
-  vector[N_intervals] log_energy_flux;
-  real log_energy_flux_mu;
+  //vector[N_intervals] log_energy_flux;
+  //real log_energy_flux_mu;
   vector[N_intervals] energy_flux;
 
   vector[N_intervals] K;
 
 
-  log_energy_flux_mu = log_energy_flux_mu_raw - 7;
+  //log_energy_flux_mu = log_energy_flux_mu_raw - 7;
 
-  log_energy_flux = log_energy_flux_mu + log_energy_flux_raw * log_energy_flux_sigma;
+  //log_energy_flux = log_energy_flux_mu + log_energy_flux_raw * log_energy_flux_sigma;
   energy_flux = pow(10, log_energy_flux);
   //vector[N_intervals] epeak;
   //vector[N_intervals] log_energy_flux;
@@ -150,11 +150,11 @@ model {
 
   // log_epeak ~ normal(2.,1);
 
-  //log_energy_flux ~ normal(-7, 1);
+  log_energy_flux ~ normal(-7, 1);
 
-  log_energy_flux_mu_raw ~ std_normal();
-  log_energy_flux_sigma ~ std_normal();
-  log_energy_flux_raw ~ std_normal();
+  //log_energy_flux_mu_raw ~ std_normal();
+  //log_energy_flux_sigma ~ std_normal();
+  //log_energy_flux_raw ~ std_normal();
 
   alpha ~ normal(-1,.5);
 
