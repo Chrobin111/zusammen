@@ -809,6 +809,8 @@ class DataSet(object):
 
         self._grb_id = {}
 
+        j = 0
+
         for i, grb in enumerate(grbs):
 
             assert isinstance(grb, GRBData)
@@ -820,10 +822,12 @@ class DataSet(object):
                 n_chans.append(grb.max_n_chans)
                 n_dets.append(grb.max_n_detectors)
                 # tag for stan
-                self._grb_id[grb.name] = i + 1
+                j += 1
+                self._grb_id[grb.name] = j
 
                 self._n_grbs += 1
 
+        print(self._grb_id)
         self._max_n_chans = max(n_chans)
         self._max_n_echans = max(n_echans)
         self._max_n_detectors = max(n_dets)
