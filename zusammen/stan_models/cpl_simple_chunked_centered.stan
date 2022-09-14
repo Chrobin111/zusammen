@@ -150,7 +150,7 @@ model {
 
   // log_epeak ~ normal(2.,1);
 
-  log_energy_flux ~ normal(-7, 1);
+  log_energy_flux ~ normal(-7, 2);
 
   //log_energy_flux_mu_raw ~ std_normal();
   //log_energy_flux_sigma ~ std_normal();
