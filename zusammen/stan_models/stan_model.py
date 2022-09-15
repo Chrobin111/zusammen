@@ -68,8 +68,12 @@ class StanModel(object):
 
         """
 
-        if self._model is not None:
-            os.remove(self._model.exe_file)
+        bin = self._stan_file.replace(".stan", "")
+        if os.path.exists(bin):
+            os.remove(bin)
+            print(f"Removed binary {bin}.")
+        else:
+            print(f"Binary {bin} does not exist.")
 
 
 def get_model(model_name):
