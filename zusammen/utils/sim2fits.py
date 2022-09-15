@@ -224,8 +224,6 @@ class AnalysisBuilder(object):
 
             process = GRBProcessor(v.grb, use_bb=use_bb, sig_min=sig_min)
 
-            print(process.yaml_params["interval_ids"])
-
             if len(process.yaml_params["interval_ids"]) > 0:
                 self._config_dict[k] = process.yaml_params
 
