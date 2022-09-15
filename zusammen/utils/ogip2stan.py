@@ -803,7 +803,7 @@ class DataSet(object):
                 n_chans.append(grb.max_n_chans)
                 n_dets.append(grb.max_n_detectors)
                 # tag for stan
-                self._grb_id[grb.name] = i
+                self._grb_id[grb.name] = i + 1
 
                 self._n_grbs += 1
 
