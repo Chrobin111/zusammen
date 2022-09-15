@@ -12,7 +12,9 @@ _available_models[
     "cpl_simple_chunked_gc_vectorized"
 ] = "cpl_simple_chunked_gc_vectorized.stan"
 _available_models["cpl_simple_chunked_gc_cauchy"] = "cpl_simple_chunked_gc_cauchy.stan"
-_available_models["cpl_simple_chunked_gc_relaxed"] = "cpl_simple_chunked_gc_relaxed.stan"
+_available_models[
+    "cpl_simple_chunked_gc_relaxed"
+] = "cpl_simple_chunked_gc_relaxed.stan"
 
 
 class StanModel(object):
@@ -25,7 +27,9 @@ class StanModel(object):
 
         self._model = None
 
-    def build_model(self, opt: bool = False, opt_exp: bool = False):
+    def build_model(
+        self, recompile: bool = False, opt: bool = False, opt_exp: bool = False
+    ):
         """
         build the stan model
 
@@ -34,6 +38,7 @@ class StanModel(object):
 
         """
 
+        compile = "force" if recompile else True
         cpp_options = dict(STAN_THREADS=True)
         stanc_options = dict()
         if opt:
@@ -44,6 +49,7 @@ class StanModel(object):
         self._model = cmdstanpy.CmdStanModel(
             stan_file=self._stan_file,
             model_name=self._name,
+            compile=compile,
             cpp_options=cpp_options,
             stanc_options=stanc_options,
         )
