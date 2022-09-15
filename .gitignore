@@ -150,8 +150,24 @@ dataframes/data
 .vscode/
 
 # Simulations
+examples/data*
 examples/SynthGRB_*
 
+# Binaries
+zusammen/stan_models/cpl_simple_chunked
+zusammen/stan_models/cpl_simple_chunked_centered
+zusammen/stan_models/cpl_simple_chunked_gc
+zusammen/stan_models/cpl_simple_chunked_gc_vectorized
+zusammen/stan_models/cpl_simple_chunked_gc_cauchy
+zusammen/stan_models/cpl_simple_chunked_gc_relaxed
+
+# Headers
+zusammen/stan_models/cpl_simple_chunked.hpp
+zusammen/stan_models/cpl_simple_chunked_centered.hpp
+zusammen/stan_models/cpl_simple_chunked_gc.hpp
+zusammen/stan_models/cpl_simple_chunked_gc_vectorized.hpp
+zusammen/stan_models/cpl_simple_chunked_gc_cauchy.hpp
+zusammen/stan_models/cpl_simple_chunked_gc_relaxed.hpp
 
 # Mac
 .DS_Store
