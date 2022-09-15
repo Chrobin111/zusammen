@@ -9,10 +9,17 @@ from cosmogrb.io.gbm_fits import grbsave_to_gbm_fits
 from cosmogrb.universe.survey import Survey
 from cosmogrb.utils.file_utils import if_directory_not_existing_then_make
 from threeML import TimeSeriesBuilder
+from threeML.utils.interval import Interval
 
 
 class GRBProcessor(object):
-    def __init__(self, gbm_grb, n_nai_to_use: int = 3, use_bb: bool = False):
+    def __init__(
+        self,
+        gbm_grb,
+        n_nai_to_use: int = 3,
+        use_bb: bool = False,
+        sig_min: float = -np.inf,
+    ):
         """
         :param gbm_grb:
         :param n_nai_to_use:
@@ -27,6 +34,8 @@ class GRBProcessor(object):
         self._n_nai_to_use: int = int(n_nai_to_use)
 
         self._use_bb: bool = use_bb
+
+        self._sig_min: float = sig_min
 
         self._config_dict = collections.OrderedDict()
 
@@ -90,6 +99,7 @@ class GRBProcessor(object):
         self._config_dict["dir"] = str(Path(self._grb_save.name).absolute())
 
         det_dic = {}
+        exclude_list = []  # list of non-significant intervals
 
         for i, name in enumerate(self._lc_names):
 
@@ -117,62 +127,43 @@ class GRBProcessor(object):
             )
 
             # for now do nothing else
-
             if self._use_bb:
 
                 if i < 1:
-
                     ts.create_time_bins(
                         -25,
                         self._grb_save.duration + 1,
                         method="bayesblocks",
                         p0=0.1,
                     )
-
                     bins_to_use = ts
-
                 else:
-
                     ts.read_bins(bins_to_use)
 
-                intervals = ts.bins.containing_interval(0,
-                                                        self._grb_save.duration,
-                                                        inner=False)
-
-                n_intervals = len(
-                    intervals
+                intervals = ts.bins.containing_interval(
+                    0, self._grb_save.duration, inner=False
                 )
-                first_interval_num = 0
 
-                # check for the first bin in intervals if it is mostly
-                # before the GRB. If more than 50% of the time interval
-                # is before GRB we want to jump this interval for the fits
-                if ((0 - intervals[0].start) / (intervals[0].stop - intervals[0].start)) > 0.5:
-                    first_interval_num = 1
-                    n_intervals -= 1
+                # check for non-significant intervals
+                if self._sig_min > -np.inf:
+                    sig = ts.significance_per_interval
+                    sig_exclude = np.where(sig < self._sig_min, True, False)
 
-                # check for the last bin in intervals if it is mostly
-                # after the GRB. If more than 50% of the time interval
-                # is after the GRB we want to skip this interval for the fits
-                if ((intervals[-1].stop-self._grb_save.duration) / (intervals[-1].stop - intervals[-1].start)) > 0.5:
-                    n_intervals -= 1
+                    for i in range(len(intervals)):
+                        if sig_exclude[i] and i not in exclude_list:
+                            exclude_list.append(i)
 
-                if n_intervals > 1:
-
+                if len(intervals) > 1:
                     ts.write_pha_from_binner(
                         file_name=Path(self._grb_save.name) / name,
-                        start=0.0,
-                        stop=self._grb_save.duration,
-                        #inner=True,
+                        start=-25,
+                        stop=self._grb_save.duration + 1,
+                        # inner=True,
                         force_rsp_write=True,
                         overwrite=True,
                     )
 
-                self._config_dict["n_intervals"] = n_intervals
-                self._config_dict["first_interval_num"] = first_interval_num
-
-                if n_intervals > 1:
-
+                if len(intervals) > 1:
                     fig = ts.view_lightcurve(use_binner=True)
 
                     fig.savefig(
@@ -181,8 +172,6 @@ class GRBProcessor(object):
                     )
 
             else:
-
-                self._config_dict["n_intervals"] = 1
 
                 ts.set_active_time_interval(f"0-{self._grb_save.duration}")
 
@@ -193,6 +182,10 @@ class GRBProcessor(object):
                     force_rsp_write=True,
                     overwrite=True,
                 )
+
+            intervals_all = np.arange(len(intervals))
+            interval_ids = np.setdiff1d(intervals_all, exclude_list)
+            self._config_dict["interval_ids"] = interval_ids.tolist()
 
             self._config_dict["detectors"] = det_dic
 
@@ -206,7 +199,13 @@ class GRBProcessor(object):
 
 
 class AnalysisBuilder(object):
-    def __init__(self, survey_file, use_all=False, use_bb=False):
+    def __init__(
+        self,
+        survey_file,
+        use_all: bool = False,
+        use_bb: bool = False,
+        sig_min: float = -np.inf,
+    ):
 
         if isinstance(survey_file, str):
 
@@ -223,9 +222,12 @@ class AnalysisBuilder(object):
 
             print(k)
 
-            process = GRBProcessor(v.grb, use_bb=use_bb)
+            process = GRBProcessor(v.grb, use_bb=use_bb, sig_min=sig_min)
 
-            self._config_dict[k] = process.yaml_params
+            print(process.yaml_params["interval_ids"])
+
+            if len(process.yaml_params["interval_ids"]) > 0:
+                self._config_dict[k] = process.yaml_params
 
     def write_yaml(self, file_name: str) -> None:
         """TODO describe function

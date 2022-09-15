@@ -279,7 +279,7 @@ class GRBDatum(object):
 
         else:
 
-            if_file = True
+            is_file = True
             f = h5py.File(name, "w")
 
         f.attrs["name"] = self._name
@@ -340,7 +340,7 @@ class GRBDatum(object):
 
         else:
 
-            if_file = True
+            is_file = True
             f = h5py.File(name, "r")
 
         # extract all the shit
@@ -511,7 +511,7 @@ class GRBInterval(object):
 
         else:
 
-            if_file = True
+            is_file = True
             f = h5py.File(name, "w")
 
         for k, v in self._data.items():
@@ -543,7 +543,7 @@ class GRBInterval(object):
 
         else:
 
-            if_file = True
+            is_file = True
             f = h5py.File(name, "r")
 
         data = []
@@ -564,7 +564,7 @@ class GRBInterval(object):
 
 
 class GRBData(object):
-    def __init__(self, grb_name, *intervals, z=None, first_interval_num=0):
+    def __init__(self, grb_name, *intervals, z=None):
         """
         Contains all the intervals from a single
         GRB
@@ -600,23 +600,13 @@ class GRBData(object):
             self._max_n_echans = 0
             self._n_detectors.append(0)
 
-        self._n_intervals = len(intervals)
         self._name = grb_name
 
         self._z = z
-        self._first_interval_num = first_interval_num
-
-    @property
-    def first_interval_num(self):
-        return self._first_interval_num
 
     @property
     def intervals(self):
         return self._intervals
-
-    @property
-    def n_intervals(self):
-        return self._n_intervals
 
     @property
     def n_detectors(self):
@@ -664,21 +654,17 @@ class GRBData(object):
 
         intervals = []
 
-        n_intervals = d["n_intervals"]
-        first_interval_num = d["first_interval_num"]
+        interval_ids: List[int] = d["interval_ids"]
 
         z = d["z"]
 
-        for i in range(first_interval_num, first_interval_num+n_intervals):
+        for i in interval_ids:
 
-            interval = GRBInterval.from_dict(d,
-                                             grb_name,
-                                             spectrum_number=i + 1)
+            interval = GRBInterval.from_dict(d, grb_name, spectrum_number=i + 1)
 
             intervals.append(interval)
 
-        return cls(grb_name, *intervals, z=z,
-                   first_interval_num=first_interval_num)
+        return cls(grb_name, *intervals, z=z)
 
     @classmethod
     def from_hdf5_file_or_group(cls, name):
@@ -700,7 +686,7 @@ class GRBData(object):
 
         else:
 
-            if_file = True
+            is_file = True
             f = h5py.File(name, "r")
 
         intervals = []
@@ -709,11 +695,9 @@ class GRBData(object):
 
         n_intervals = f.attrs["n_intervals"]
 
-        first_interval_num = f.attrs["first_interval_num"]
-
         z = f.attrs["z"]
 
-        for i in range(first_interval_num, first_interval_num+n_intervals):
+        for i in range(n_intervals):
 
             interval = GRBInterval.from_hdf5_file_or_group(f[f"interval_{i}"])
 
@@ -749,12 +733,12 @@ class GRBData(object):
 
         else:
 
-            if_file = True
+            is_file = True
             f = h5py.File(name, "w")
 
         n_intervals = 0
 
-        for i in range(self._n_intervals):
+        for i in range(len(self.intervals)):
 
             # this will recurse down the intervals
 
@@ -782,9 +766,8 @@ class GRBData(object):
 
         f.attrs["z"] = self._z
         f.attrs["n_intervals"] = n_intervals
-        f.attrs["first_interval_num"] = self._first_interval_num
-        if is_file:
 
+        if is_file:
             f.close()
 
 
@@ -809,25 +792,21 @@ class DataSet(object):
 
         self._grb_id = {}
 
-        j = 0
-
         for i, grb in enumerate(grbs):
 
             assert isinstance(grb, GRBData)
-            if grb.n_intervals > 0:
+            if len(grb.intervals) > 0:
 
                 self._grbs[grb.name] = grb
-                self._n_intervals += grb.n_intervals
+                self._n_intervals += len(grb.intervals)
                 n_echans.append(grb.max_n_echans)
                 n_chans.append(grb.max_n_chans)
                 n_dets.append(grb.max_n_detectors)
                 # tag for stan
-                j += 1
-                self._grb_id[grb.name] = j
+                self._grb_id[grb.name] = i
 
                 self._n_grbs += 1
 
-        print(self._grb_id)
         self._max_n_chans = max(n_chans)
         self._max_n_echans = max(n_echans)
         self._max_n_detectors = max(n_dets)
@@ -871,7 +850,9 @@ class DataSet(object):
         them to HDF5. The yaml file should look like
 
         grb_name:
-           n_intervals: 4
+           intervals:
+             - 1
+             - 2
            dir: ~/home/location
            z=1
            detectors:
@@ -1019,60 +1000,54 @@ class DataSet(object):
 
         stan_data = collections.OrderedDict()
 
-        stan_data["N_intervals"] = int(self._n_intervals)
+        n_intervals = self._n_intervals
+
+        stan_data["N_intervals"] = int(n_intervals)
         stan_data["N_grbs"] = self._n_grbs
 
         stan_data["max_n_echan"] = self._max_n_echans
         stan_data["max_n_chan"] = self._max_n_chans
 
         observed_counts = np.zeros(
-            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
+            (n_intervals, self._max_n_detectors, self._max_n_chans)
         )
         background_counts = np.zeros(
-            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
+            (n_intervals, self._max_n_detectors, self._max_n_chans)
         )
         background_errors = np.zeros(
-            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
+            (n_intervals, self._max_n_detectors, self._max_n_chans)
         )
 
         idx_background_zero = np.zeros(
-            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
+            (n_intervals, self._max_n_detectors, self._max_n_chans)
         )
         idx_background_nonzero = np.zeros(
-            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
+            (n_intervals, self._max_n_detectors, self._max_n_chans)
         )
-        n_bkg_zero = np.zeros((self._n_intervals, self._max_n_detectors))
-        n_bkg_nonzero = np.zeros((self._n_intervals, self._max_n_detectors))
+        n_bkg_zero = np.zeros((n_intervals, self._max_n_detectors))
+        n_bkg_nonzero = np.zeros((n_intervals, self._max_n_detectors))
 
         responses = np.zeros(
             (
-                self._n_intervals,
+                n_intervals,
                 self._max_n_detectors,
                 self._max_n_chans,
                 self._max_n_echans,
             )
         )
 
-        exposures = np.zeros((self._n_intervals, self._max_n_detectors))
-        n_echan = np.zeros((self._n_intervals, self._max_n_detectors))
-        n_chan = np.zeros((self._n_intervals, self._max_n_detectors))
+        exposures = np.zeros((n_intervals, self._max_n_detectors))
+        n_echan = np.zeros((n_intervals, self._max_n_detectors))
+        n_chan = np.zeros((n_intervals, self._max_n_detectors))
 
-        masks = np.zeros((self._n_intervals, self._max_n_detectors, self._max_n_chans))
-        n_channels_used = np.zeros((self._n_intervals, self._max_n_detectors))
-        grb_id = np.zeros(self._n_intervals)
-        ebounds_lo = np.zeros(
-            (self._n_intervals, self._max_n_detectors, self._max_n_echans)
-        )
-        ebounds_hi = np.zeros(
-            (self._n_intervals, self._max_n_detectors, self._max_n_echans)
-        )
+        masks = np.zeros((n_intervals, self._max_n_detectors, self._max_n_chans))
+        n_channels_used = np.zeros((n_intervals, self._max_n_detectors))
+        grb_id = np.zeros(n_intervals)
+        ebounds_lo = np.zeros((n_intervals, self._max_n_detectors, self._max_n_echans))
+        ebounds_hi = np.zeros((n_intervals, self._max_n_detectors, self._max_n_echans))
 
-        cbounds_lo = np.zeros(
-            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
-        )
-        cbounds_hi = np.zeros(
-            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
-        )
+        cbounds_lo = np.zeros((n_intervals, self._max_n_detectors, self._max_n_chans))
+        cbounds_hi = np.zeros((n_intervals, self._max_n_detectors, self._max_n_chans))
 
         grb_id = []
 
