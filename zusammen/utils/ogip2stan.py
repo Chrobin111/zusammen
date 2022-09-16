@@ -654,12 +654,13 @@ class GRBData(object):
 
         intervals = []
 
-        interval_ids: List[int] = d["interval_ids"]
+        interval_ids = d["interval_ids"]
 
         z = d["z"]
 
         for i in interval_ids:
 
+            # observations really low!
             interval = GRBInterval.from_dict(d, grb_name, spectrum_number=i + 1)
 
             intervals.append(interval)
@@ -1000,54 +1001,60 @@ class DataSet(object):
 
         stan_data = collections.OrderedDict()
 
-        n_intervals = self._n_intervals
-
-        stan_data["N_intervals"] = int(n_intervals)
+        stan_data["N_intervals"] = int(self._n_intervals)
         stan_data["N_grbs"] = self._n_grbs
 
         stan_data["max_n_echan"] = self._max_n_echans
         stan_data["max_n_chan"] = self._max_n_chans
 
         observed_counts = np.zeros(
-            (n_intervals, self._max_n_detectors, self._max_n_chans)
+            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
         )
         background_counts = np.zeros(
-            (n_intervals, self._max_n_detectors, self._max_n_chans)
+            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
         )
         background_errors = np.zeros(
-            (n_intervals, self._max_n_detectors, self._max_n_chans)
+            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
         )
 
         idx_background_zero = np.zeros(
-            (n_intervals, self._max_n_detectors, self._max_n_chans)
+            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
         )
         idx_background_nonzero = np.zeros(
-            (n_intervals, self._max_n_detectors, self._max_n_chans)
+            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
         )
-        n_bkg_zero = np.zeros((n_intervals, self._max_n_detectors))
-        n_bkg_nonzero = np.zeros((n_intervals, self._max_n_detectors))
+        n_bkg_zero = np.zeros((self._n_intervals, self._max_n_detectors))
+        n_bkg_nonzero = np.zeros((self._n_intervals, self._max_n_detectors))
 
         responses = np.zeros(
             (
-                n_intervals,
+                self._n_intervals,
                 self._max_n_detectors,
                 self._max_n_chans,
                 self._max_n_echans,
             )
         )
 
-        exposures = np.zeros((n_intervals, self._max_n_detectors))
-        n_echan = np.zeros((n_intervals, self._max_n_detectors))
-        n_chan = np.zeros((n_intervals, self._max_n_detectors))
+        exposures = np.zeros((self._n_intervals, self._max_n_detectors))
+        n_echan = np.zeros((self._n_intervals, self._max_n_detectors))
+        n_chan = np.zeros((self._n_intervals, self._max_n_detectors))
 
-        masks = np.zeros((n_intervals, self._max_n_detectors, self._max_n_chans))
-        n_channels_used = np.zeros((n_intervals, self._max_n_detectors))
-        grb_id = np.zeros(n_intervals)
-        ebounds_lo = np.zeros((n_intervals, self._max_n_detectors, self._max_n_echans))
-        ebounds_hi = np.zeros((n_intervals, self._max_n_detectors, self._max_n_echans))
+        masks = np.zeros((self._n_intervals, self._max_n_detectors, self._max_n_chans))
+        n_channels_used = np.zeros((self._n_intervals, self._max_n_detectors))
+        grb_id = np.zeros(self._n_intervals)
+        ebounds_lo = np.zeros(
+            (self._n_intervals, self._max_n_detectors, self._max_n_echans)
+        )
+        ebounds_hi = np.zeros(
+            (self._n_intervals, self._max_n_detectors, self._max_n_echans)
+        )
 
-        cbounds_lo = np.zeros((n_intervals, self._max_n_detectors, self._max_n_chans))
-        cbounds_hi = np.zeros((n_intervals, self._max_n_detectors, self._max_n_chans))
+        cbounds_lo = np.zeros(
+            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
+        )
+        cbounds_hi = np.zeros(
+            (self._n_intervals, self._max_n_detectors, self._max_n_chans)
+        )
 
         grb_id = []
 
