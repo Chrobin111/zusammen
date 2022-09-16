@@ -56,7 +56,8 @@ class GRBProcessor(object):
         # collect
 
         angular_distances = []
-        bgo_anglular_distance = 1000
+        bgo_angular_distance = 1000
+        bgo_det = ""
         lc_names = []
 
         for name, det in self._grb_save.items():
@@ -70,8 +71,9 @@ class GRBProcessor(object):
                 angular_distances.append(lc.extra_info["angle"])
 
             else:
-                if lc.extra_info["angle"] < bgo_anglular_distance:
-                    bgo_anglular_distance = lc.extra_info["angle"]
+
+                if lc.extra_info["angle"] < bgo_angular_distance:
+                    bgo_angular_distance = lc.extra_info["angle"]
                     bgo_det = str(name)
 
         angular_distances = np.array(angular_distances)
@@ -100,6 +102,7 @@ class GRBProcessor(object):
 
         det_dic = {}
         exclude_list = []  # list of non-significant intervals
+        bins_to_use = None
 
         for i, name in enumerate(self._lc_names):
 
@@ -109,7 +112,7 @@ class GRBProcessor(object):
 
             else:
 
-                selection = "250-30000"
+                selection = "250-10000"
 
             det_dic[name] = selection
 
@@ -123,7 +126,7 @@ class GRBProcessor(object):
 
             ts.set_background_interval(
                 "-20--5",
-                f"{self._grb_save.duration + 5}- {self._grb_save.duration + 20}",
+                f"{self._grb_save.duration + 5}-{self._grb_save.duration + 20}",
             )
 
             # for now do nothing else
@@ -153,15 +156,14 @@ class GRBProcessor(object):
                         if sig_exclude[i] and i not in exclude_list:
                             exclude_list.append(i)
 
-                if len(intervals) > 1:
-                    ts.write_pha_from_binner(
-                        file_name=Path(self._grb_save.name) / name,
-                        start=-25,
-                        stop=self._grb_save.duration + 1,
-                        # inner=True,
-                        force_rsp_write=True,
-                        overwrite=True,
-                    )
+                ts.write_pha_from_binner(
+                    file_name=Path(self._grb_save.name) / name,
+                    start=-25,
+                    stop=self._grb_save.duration + 1,
+                    # inner=True,
+                    force_rsp_write=True,
+                    overwrite=True,
+                )
 
                 if len(intervals) > 1:
                     fig = ts.view_lightcurve(use_binner=True)
@@ -170,6 +172,8 @@ class GRBProcessor(object):
                         f"{Path(self._grb_save.name) / name}_lc.png",
                         bbox_inches="tight",
                     )
+
+                intervals_all = np.arange(len(intervals))
 
             else:
 
@@ -183,14 +187,15 @@ class GRBProcessor(object):
                     overwrite=True,
                 )
 
-            intervals_all = np.arange(len(intervals))
-            interval_ids = np.setdiff1d(intervals_all, exclude_list)
-            self._config_dict["interval_ids"] = interval_ids.tolist()
+                intervals_all = np.array([0])
 
-            self._config_dict["detectors"] = det_dic
+        interval_ids = np.setdiff1d(intervals_all, exclude_list)
+        self._config_dict["interval_ids"] = interval_ids.tolist()
 
-            for k, v in self._fits_files[name].items():
-                Path(v).unlink()
+        self._config_dict["detectors"] = det_dic
+
+        for k, v in self._fits_files[name].items():
+            Path(v).unlink()
 
     @property
     def yaml_params(self):
