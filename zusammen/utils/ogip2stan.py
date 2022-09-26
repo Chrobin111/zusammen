@@ -48,6 +48,7 @@ class GRBDatum(object):
         significance,
         tstart: Optional[float] = None,
         tstop: Optional[float] = None,
+        mc_bound_limit: Optional[float] = None
     ) -> None:
 
         self._n_chans = len(observation)
@@ -77,6 +78,9 @@ class GRBDatum(object):
 
         self._tstart: Optional[float] = tstart
         self._tstop: Optional[float] = tstop
+        self._mc_bound_limit = mc_bound_limit
+
+        self._mc_index_mask = self._mc_energies[1:] < self._mc_bound_limit
 
     @property
     def name(self):
@@ -84,11 +88,11 @@ class GRBDatum(object):
 
     @property
     def response(self):
-        return self._response
+        return self._response[:,self._mc_index_mask]
 
     @property
     def response_transpose(self):
-        return self._response.T
+        return self.response.T
 
     @property
     def observation(self):
@@ -136,7 +140,7 @@ class GRBDatum(object):
 
     @property
     def n_echans(self):
-        return self._response.shape[1]
+        return self.response.shape[1]
 
     @property
     def exposure(self):
@@ -148,27 +152,28 @@ class GRBDatum(object):
 
     @property
     def ebounds(self):
+        if self._mc_bound_limit is not None:
+            return self._mc_energies[self._mc_energies < self._mc_bound_limit]
         return self._mc_energies
 
     @property
     def ebounds_lo(self):
-        return self._mc_energies[:-1]
+        return self.ebounds[:-1]
 
     @property
     def ebounds_hi(self):
-        return self._mc_energies[1:]
+        return self.ebounds[1:]
 
     @property
     def cbounds(self):
         return self._ebounds
-
     @property
     def cbounds_lo(self):
-        return self._ebounds[:-1]
+        return self.cbounds[:-1]
 
     @property
     def cbounds_hi(self):
-        return self._ebounds[1:]
+        return self.cbounds[1:]
 
     @property
     def tstart(self) -> Optional[float]:
@@ -188,9 +193,9 @@ class GRBDatum(object):
         """
         # create the response
         rsp = InstrumentResponse(
-            matrix=self._response,
-            ebounds=self._ebounds,
-            monte_carlo_energies=self._mc_energies,
+            matrix=self.response,
+            ebounds=self.cbounds,
+            monte_carlo_energies=self.ebounds,
         )
 
         observation = BinnedSpectrumWithDispersion(
@@ -216,7 +221,7 @@ class GRBDatum(object):
         )
 
     @classmethod
-    def from_ogip(cls, name, obs_file, bkg_file, rsp, selection, spectrum_number=1):
+    def from_ogip(cls, name, obs_file, bkg_file, rsp, selection, spectrum_number=1, mc_bound_limit=None):
         """
         Create the base data from FITS files.
 
@@ -260,6 +265,7 @@ class GRBDatum(object):
             ogip.significance,
             ogip.tstart,
             ogip.tstop,
+            mc_bound_limit=mc_bound_limit
         )
 
     def to_hdf5_file_or_group(self, name):
@@ -304,15 +310,15 @@ class GRBDatum(object):
             shuffle=True,
         )
         f.create_dataset(
-            "response", data=self._response, compression="lzf", shuffle=True
+            "response", data=self.response, compression="lzf", shuffle=True
         )
         f.create_dataset(
             "mc_energies",
-            data=self._mc_energies,
+            data=self.ebounds,
             compression="lzf",
             shuffle=True,
         )
-        f.create_dataset("ebounds", data=self._ebounds, compression="lzf", shuffle=True)
+        f.create_dataset("ebounds", data=self.cbounds, compression="lzf", shuffle=True)
         f.create_dataset("mask", data=self._mask, compression="lzf", shuffle=True)
 
         if is_file:
@@ -444,7 +450,7 @@ class GRBInterval(object):
         return self._max_n_chans
 
     @classmethod
-    def from_dict(cls, d, grb_name, spectrum_number=1):
+    def from_dict(cls, d, grb_name, spectrum_number=1, mc_bound_limit=None):
         """
         create from a dictionary that is initially
         from the yaml file and will trigger the reading
@@ -487,7 +493,7 @@ class GRBInterval(object):
             rsp_file = glob(os.path.join(directory, f"*{det}*.rsp"))[0]
 
             datum = GRBDatum.from_ogip(
-                det, obs_file, bak_file, rsp_file, dets[det], spectrum_number
+                det, obs_file, bak_file, rsp_file, dets[det], spectrum_number, mc_bound_limit=mc_bound_limit
             )
 
             data.append(datum)
@@ -637,7 +643,7 @@ class GRBData(object):
         return cosmo.luminosity_distance(self._z).to("cm").value
 
     @classmethod
-    def from_dict(cls, grb_name, d):
+    def from_dict(cls, grb_name, d, mc_bound_limit):
         """
 
         construct from dictionary via
@@ -661,7 +667,7 @@ class GRBData(object):
         for i in interval_ids:
 
             # observations really low!
-            interval = GRBInterval.from_dict(d, grb_name, spectrum_number=i + 1)
+            interval = GRBInterval.from_dict(d, grb_name, spectrum_number=i + 1, mc_bound_limit=mc_bound_limit)
 
             intervals.append(interval)
 
@@ -813,7 +819,7 @@ class DataSet(object):
         self._max_n_detectors = max(n_dets)
 
     @classmethod
-    def from_dict(cls, d):
+    def from_dict(cls, d, mc_bound_limit=None):
         """
         construct from a dictionary with the layout
         specified in the from_yaml function
@@ -835,14 +841,14 @@ class DataSet(object):
             # which will recurse and build things
             # from fits files
 
-            grb = GRBData.from_dict(grb_name, d2)
+            grb = GRBData.from_dict(grb_name, d2, mc_bound_limit=mc_bound_limit)
 
             grbs.append(grb)
 
         return cls(*grbs)
 
     @classmethod
-    def from_yaml(cls, file_name):
+    def from_yaml(cls, file_name, mc_bound_limit=None):
         """
 
         Construct from a yaml file that specifies
@@ -880,7 +886,7 @@ class DataSet(object):
 
             # call the dict construction method
 
-        return cls.from_dict(d)
+        return cls.from_dict(d, mc_bound_limit=mc_bound_limit)
 
     @classmethod
     def from_hdf5_file(cls, file_name):
