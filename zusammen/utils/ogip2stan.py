@@ -643,7 +643,7 @@ class GRBData(object):
         return cosmo.luminosity_distance(self._z).to("cm").value
 
     @classmethod
-    def from_dict(cls, grb_name, d, mc_bound_limit):
+    def from_dict(cls, grb_name, d, mc_bound_limit=None):
         """
 
         construct from dictionary via
