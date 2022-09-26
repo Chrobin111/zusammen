@@ -10,7 +10,7 @@ from cosmogrb.universe.survey import Survey
 from cosmogrb.utils.file_utils import if_directory_not_existing_then_make
 from threeML import TimeSeriesBuilder
 from threeML.utils.interval import Interval
-
+from typing import Union
 
 class GRBProcessor(object):
     def __init__(
@@ -18,7 +18,8 @@ class GRBProcessor(object):
         gbm_grb,
         n_nai_to_use: int = 3,
         use_bb: bool = False,
-        sig_min: float = -np.inf,
+        sig_min: Union[float, None] = None,
+        all_above_limit: bool = False
     ):
         """
         :param gbm_grb:
@@ -35,7 +36,9 @@ class GRBProcessor(object):
 
         self._use_bb: bool = use_bb
 
-        self._sig_min: float = sig_min
+        self._sig_min: Union[float, None] = sig_min
+
+        self._all_above_limit: bool = all_above_limit
 
         self._config_dict = collections.OrderedDict()
 
@@ -99,7 +102,6 @@ class GRBProcessor(object):
         self._config_dict["dir"] = str(Path(self._grb_save.name).absolute())
 
         det_dic = {}
-        exclude_list = []  # list of non-significant intervals
 
         for i, name in enumerate(self._lc_names):
 
@@ -137,27 +139,23 @@ class GRBProcessor(object):
                         p0=0.1,
                     )
                     bins_to_use = ts
+                    above_limit = np.zeros((len(self._lc_names), len(ts.bins)),
+                                           dtype=bool)
                 else:
                     ts.read_bins(bins_to_use)
 
-                intervals = ts.bins.containing_interval(
-                    0, self._grb_save.duration, inner=False
-                )
+                intervals = ts.bins
 
                 # check for non-significant intervals
-                if self._sig_min > -np.inf:
+                if self._sig_min is not None:
                     sig = ts.significance_per_interval
-                    sig_exclude = np.where(sig < self._sig_min, True, False)
-
-                    for i in range(len(intervals)):
-                        if sig_exclude[i] and i not in exclude_list:
-                            exclude_list.append(i)
+                    above_limit[i] = sig > self._sig_min
 
                 if len(intervals) > 1:
                     ts.write_pha_from_binner(
                         file_name=Path(self._grb_save.name) / name,
-                        start=-25,
-                        stop=self._grb_save.duration + 1,
+                        #start=-25,
+                        #stop=self._grb_save.duration + 1,
                         # inner=True,
                         force_rsp_write=True,
                         overwrite=True,
@@ -183,8 +181,11 @@ class GRBProcessor(object):
                     overwrite=True,
                 )
 
-            intervals_all = np.arange(len(intervals))
-            interval_ids = np.setdiff1d(intervals_all, exclude_list)
+            if self._all_above_limit:
+                interval_ids = np.argwhere(np.all(above_limit, axis=0)).flatten()
+            else:
+                interval_ids = np.argwhere(np.any(above_limit, axis=0)).flatten()
+
             self._config_dict["interval_ids"] = interval_ids.tolist()
 
             self._config_dict["detectors"] = det_dic
@@ -204,7 +205,8 @@ class AnalysisBuilder(object):
         survey_file,
         use_all: bool = False,
         use_bb: bool = False,
-        sig_min: float = -np.inf,
+        sig_min: Union[float, None] = None,
+        all_above_limit: bool = False
     ):
 
         if isinstance(survey_file, str):
@@ -220,9 +222,10 @@ class AnalysisBuilder(object):
         self._config_dict = collections.OrderedDict()
         for k, v in self._survey.items():
 
-            print(k)
-
-            process = GRBProcessor(v.grb, use_bb=use_bb, sig_min=sig_min)
+            process = GRBProcessor(v.grb,
+                                   use_bb=use_bb,
+                                   sig_min=sig_min,
+                                   all_above_limit=all_above_limit)
 
             if len(process.yaml_params["interval_ids"]) > 0:
                 self._config_dict[k] = process.yaml_params
