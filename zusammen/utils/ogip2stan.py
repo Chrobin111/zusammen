@@ -80,8 +80,11 @@ class GRBDatum(object):
         self._tstop: Optional[float] = tstop
         self._mc_bound_limit = mc_bound_limit
 
-        self._mc_index_mask = self._mc_energies[1:] < self._mc_bound_limit
-
+        if self._mc_bound_limit is not None:
+            self._mc_index_mask = self._mc_energies[1:] < self._mc_bound_limit
+        else:
+            self._mc_index_mask = np.ones(len(self._mc_energies[1:]),
+                                          dtype=bool)
     @property
     def name(self):
         return self._name

@@ -192,6 +192,7 @@ class GRBProcessor(object):
 
         self._config_dict["interval_ids"] = interval_ids.tolist()
 
+        self._config_dict["detectors"] = det_dic
 
         for k, v in self._fits_files[name].items():
             Path(v).unlink()
