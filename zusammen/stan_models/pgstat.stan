@@ -19,7 +19,7 @@ vector pgstat(vector observed_counts, vector background_counts, vector backgroun
   vector[N] log_likes;
   vector[N] s2 = square(background_error); // Sigma squared
   vector[N] b = background_model(observed_counts, background_counts, background_error, expected_model_counts); // Background model
-  vector[N] factorial_term = expected_model_counts - lgamma(observed_counts +1 );
+  vector[N] factorial_term = expected_model_counts + lgamma(observed_counts +1 ); // +???
 
   log_likes[idx_background_nonzero] = (-square(b[idx_background_nonzero] - background_counts[idx_background_nonzero]) ./ (2 * s2[idx_background_nonzero])
 				       + observed_counts[idx_background_nonzero] .* log(b[idx_background_nonzero] + expected_model_counts[idx_background_nonzero])
@@ -27,8 +27,12 @@ vector pgstat(vector observed_counts, vector background_counts, vector backgroun
 				       - 0.5 * log(2 * pi()) - log(background_error[idx_background_nonzero]));
 
 
-  for (n in 1:num_elements(idx_background_zero)) {
-    log_likes[idx_background_zero[n]] = lmultiply(observed_counts[idx_background_zero[n]], expected_model_counts[idx_background_zero[n]]) - factorial_term[idx_background_zero[n]];
+  for (n in 1:num_elements(idx_background_zero)) { //what happens if observed_counts is zero?
+    if (observed_counts[idx_background_zero[n]]>0){
+      log_likes[idx_background_zero[n]] = lmultiply(observed_counts[idx_background_zero[n]], expected_model_counts[idx_background_zero[n]]) - factorial_term[idx_background_zero[n]];
+      } else{
+      log_likes[idx_background_zero[n]] = - factorial_term[idx_background_zero[n]];
+    }
   }
 
   return log_likes;
