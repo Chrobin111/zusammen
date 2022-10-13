@@ -156,11 +156,14 @@ examples/SynthGRB_*
 # Binaries
 zusammen/stan_models/cpl_simple_chunked
 zusammen/stan_models/cpl_simple_chunked_centered
+zusammen/stan_models/cpl_simple_chunked_combined
 zusammen/stan_models/cpl_simple_chunked_gc
 zusammen/stan_models/cpl_simple_chunked_gc_vectorized
 zusammen/stan_models/cpl_simple_chunked_gc_cauchy
 zusammen/stan_models/cpl_simple_chunked_gc_relaxed
-zusammen/stan_models/cpl_simple_chunked_combined
+zusammen/stan_models/cpl_simple_chunked_gc_relaxed_gamma
+zusammen/stan_models/cpl_simple_chunked_gc_relaxed_Nrest
+zusammen/stan_models/cpl_simple_chunked_gc_z
 
 # Mac
 .DS_Store
