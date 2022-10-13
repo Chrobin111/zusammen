@@ -46,7 +46,7 @@ data {
   vector[N_intervals] z; // redshift
 
   int N_unknown; // number of unknown z
-  array[N_intervals] int z_known_bool; // boolean array whether z is known
+  array[N_intervals] int z_mask; // boolean array whether z is known
   array[N_intervals] int unknown_id; // for iteration over unknown z
 
   //real maxSlope; // maximum value for gamma
@@ -150,11 +150,12 @@ transformed parameters {
 
     log_epeak[n] = log10(2+alpha[n]) + log_ec[n];
 
-    if (z_known_bool[n] == 0) {
-      log_energy_flux[n] = log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl(z_unknown[unknown_id[n]]))) + gamma[grb_id[n]] * (log10(1 + z_unknown[unknown_id[n]]) + log_epeak[n] - 2);
+    if (z_mask[n] == 0) {
+      log_energy_flux[n] = log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl_func(z_unknown[unknown_id[n]]))) + gamma[grb_id[n]] * (log10(1 + z_unknown[unknown_id[n]]) + log_epeak[n] - 2);
     } else {
       log_energy_flux[n] = log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl[n])) + gamma[grb_id[n]] * (log10(1 + z[n]) + log_epeak[n] - 2);
     }
+
     energy_flux[n] = pow(10, log_energy_flux[n]);
 
     //print(theta);

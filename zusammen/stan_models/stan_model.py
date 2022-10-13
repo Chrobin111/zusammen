@@ -7,6 +7,7 @@ _available_models = {}
 
 _available_models["cpl_simple_chunked"] = "cpl_simple_chunked.stan"
 _available_models["cpl_simple_chunked_centered"] = "cpl_simple_chunked_centered.stan"
+_available_models["cpl_simple_chunked_combined"] = "cpl_simple_chunked_combined.stan"
 _available_models["cpl_simple_chunked_gc"] = "cpl_simple_chunked_gc.stan"
 _available_models[
     "cpl_simple_chunked_gc_vectorized"
@@ -16,8 +17,12 @@ _available_models[
     "cpl_simple_chunked_gc_relaxed"
 ] = "cpl_simple_chunked_gc_relaxed.stan"
 _available_models[
-    "cpl_simple_chunked_combined"
-] = "cpl_simple_chunked_combined.stan"
+    "cpl_simple_chunked_gc_relaxed_gamma"
+] = "cpl_simple_chunked_gc_relaxed_gamma.stan"
+_available_models[
+    "cpl_simple_chunked_gc_relaxed_Nrest"
+] = "cpl_simple_chunked_gc_relaxed_Nrest.stan"
+_available_models["cpl_simple_chunked_gc_z"] = "cpl_simple_chunked_gc_z.stan"
 
 
 class StanModel(object):
