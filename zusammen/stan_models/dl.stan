@@ -8,7 +8,7 @@ real my_Phi(real my_x) {
 }
 
 
-real dl(real z) {
+real dl_func(real z) {
     real H0 = 2.2e-18; // 1/s
     real Om = 0.27;
     real c = 299792458; // m/s
