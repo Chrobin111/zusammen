@@ -814,6 +814,7 @@ class DataSet(object):
 
         self._grbs: Dict[str, GRBData] = collections.OrderedDict()
         self._n_intervals = 0
+        self._n_unknown = 0
 
         n_echans = []
         n_chans = []
@@ -823,10 +824,9 @@ class DataSet(object):
         self._grb_id = {}
 
         for i, grb in enumerate(grbs):
-
             assert isinstance(grb, GRBData)
-            if len(grb.intervals) > 0:
 
+            if len(grb.intervals) > 0:
                 self._grbs[grb.name] = grb
                 self._n_intervals += len(grb.intervals)
                 n_echans.append(grb.max_n_echans)
@@ -836,6 +836,9 @@ class DataSet(object):
                 self._grb_id[grb.name] = i + 1
 
                 self._n_grbs += 1
+
+            if grb.z == 0:
+                self._n_unknown += 1
 
         self._max_n_chans = max(n_chans)
         self._max_n_echans = max(n_echans)
@@ -1092,9 +1095,14 @@ class DataSet(object):
         z = []
         dl = []
 
+        stan_data["N_unknown"] = self._n_unknown
+        z_mask = []
+        unknown_id = []
+
         total_number_of_channels_used = 0
 
         i = 0
+        j = 0
 
         for name, grb in self._grbs.items():
 
@@ -1151,6 +1159,14 @@ class DataSet(object):
 
                     total_number_of_channels_used += datum.n_channels_used
 
+                if z == 0:
+                    z_mask.append(0)
+                    unknown_id.append(j)
+                    j += 1
+                else:
+                    z_mask.append(1)
+                    unknown_id.append(0)
+
                 # iterate the interval
                 i += 1
 
@@ -1180,5 +1196,8 @@ class DataSet(object):
 
         stan_data["dl"] = dl
         stan_data["z"] = z
+
+        stan_data["z_mask"] = z_mask
+        stan_data["unknown_id"] = unknown_id
 
         return stan_data
