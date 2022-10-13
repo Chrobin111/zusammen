@@ -48,7 +48,7 @@ class GRBDatum(object):
         significance,
         tstart: Optional[float] = None,
         tstop: Optional[float] = None,
-        mc_bound_limit: Optional[float] = None
+        mc_bound_limit: Optional[float] = None,
     ) -> None:
 
         self._n_chans = len(observation)
@@ -83,15 +83,15 @@ class GRBDatum(object):
         if self._mc_bound_limit is not None:
             self._mc_index_mask = self._mc_energies[1:] < self._mc_bound_limit
         else:
-            self._mc_index_mask = np.ones(len(self._mc_energies[1:]),
-                                          dtype=bool)
+            self._mc_index_mask = np.ones(len(self._mc_energies[1:]), dtype=bool)
+
     @property
     def name(self):
         return self._name
 
     @property
     def response(self):
-        return self._response[:,self._mc_index_mask]
+        return self._response[:, self._mc_index_mask]
 
     @property
     def response_transpose(self):
@@ -170,6 +170,7 @@ class GRBDatum(object):
     @property
     def cbounds(self):
         return self._ebounds
+
     @property
     def cbounds_lo(self):
         return self.cbounds[:-1]
@@ -224,7 +225,16 @@ class GRBDatum(object):
         )
 
     @classmethod
-    def from_ogip(cls, name, obs_file, bkg_file, rsp, selection, spectrum_number=1, mc_bound_limit=None):
+    def from_ogip(
+        cls,
+        name,
+        obs_file,
+        bkg_file,
+        rsp,
+        selection,
+        spectrum_number=1,
+        mc_bound_limit=None,
+    ):
         """
         Create the base data from FITS files.
 
@@ -252,8 +262,10 @@ class GRBDatum(object):
         )
 
         # set the mask
-
         ogip.set_active_measurements(selection)
+
+        # ogip.rebin_on_background(1)
+        # ogip.rebin_on_source(1)
 
         return cls(
             name,
@@ -268,7 +280,7 @@ class GRBDatum(object):
             ogip.significance,
             ogip.tstart,
             ogip.tstop,
-            mc_bound_limit=mc_bound_limit
+            mc_bound_limit=mc_bound_limit,
         )
 
     def to_hdf5_file_or_group(self, name):
@@ -496,7 +508,13 @@ class GRBInterval(object):
             rsp_file = glob(os.path.join(directory, f"*{det}*.rsp"))[0]
 
             datum = GRBDatum.from_ogip(
-                det, obs_file, bak_file, rsp_file, dets[det], spectrum_number, mc_bound_limit=mc_bound_limit
+                det,
+                obs_file,
+                bak_file,
+                rsp_file,
+                dets[det],
+                spectrum_number,
+                mc_bound_limit=mc_bound_limit,
             )
 
             data.append(datum)
@@ -670,7 +688,9 @@ class GRBData(object):
         for i in interval_ids:
 
             # observations really low!
-            interval = GRBInterval.from_dict(d, grb_name, spectrum_number=i + 1, mc_bound_limit=mc_bound_limit)
+            interval = GRBInterval.from_dict(
+                d, grb_name, spectrum_number=i + 1, mc_bound_limit=mc_bound_limit
+            )
 
             intervals.append(interval)
 
