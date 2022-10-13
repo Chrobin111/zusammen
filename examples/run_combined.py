@@ -9,10 +9,11 @@ from natsort import natsorted
 import matplotlib.pyplot as plt
 
 
-#plt.style.use("mike")
+# plt.style.use("mike")
 import warnings
+
 warnings.simplefilter("ignore")
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
 
 
 import astropy.units as u
@@ -26,7 +27,8 @@ purple = "#CE33FF"
 from cosmogrb.universe.survey import Survey
 
 import os, sys
-parent_dir = os.path.abspath('..')
+
+parent_dir = os.path.abspath("..")
 if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
@@ -54,13 +56,14 @@ import popsynth as ps
 ds = DataSet.from_yaml("test_proc.yml")
 
 import cmdstanpy
-cmdstanpy.set_cmdstan_path("/home/bjorn/general_sw/cmdstan-2.29.0/")
+
+# cmdstanpy.set_cmdstan_path("/home/bjorn/general_sw/cmdstan-2.29.0/")
 
 m = get_model("cpl_simple_chunked_combined")
 
 m.clean_model()
 
-m.build_model()#opt_exp=True)
+m.build_model()  # opt_exp=True)
 
 data = ds.to_stan_dict()
 
@@ -71,14 +74,15 @@ fit = m.model.sample(
     data=data,
     parallel_chains=n_chains,
     chains=n_chains,
-    inits= {'alpha':-1.*np.ones(data["N_intervals"]),
-            "log_ec": 2*np.ones(data["N_intervals"]),
-            #"log_K": -1*np.ones(data["N_intervals"]),
-            "log_energy_flux_mu_raw": 0,
-            "log_energy_flux_sigma": 1,
-            "log_energy_flux_raw": 0*np.ones(data["N_intervals"]),
-            #"log_energy_flux": -6*np.ones(data["N_intervals"])},
-            },
+    inits={
+        "alpha": -1.0 * np.ones(data["N_intervals"]),
+        "log_ec": 2 * np.ones(data["N_intervals"]),
+        # "log_K": -1 * np.ones(data["N_intervals"]),
+        "log_energy_flux_mu_raw": 0,
+        "log_energy_flux_sigma": 1,
+        "log_energy_flux_raw": np.zeros(data["N_intervals"]),
+        # "log_energy_flux": -6 * np.ones(data["N_intervals"])},
+    },
     threads_per_chain=n_threads,
     seed=1234,
     iter_warmup=1000,
@@ -86,8 +90,8 @@ fit = m.model.sample(
     max_treedepth=15,
     adapt_delta=0.9,
     show_progress=True,
-    #show_console=True
-    output_dir=".stan/"
+    # show_console=True
+    output_dir=".stan/",
 )
 
 res = av.from_cmdstanpy(fit)
