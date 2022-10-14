@@ -1102,9 +1102,12 @@ class DataSet(object):
         total_number_of_channels_used = 0
 
         i = 0
-        j = 0
+        i_z = 0
 
         for name, grb in self._grbs.items():
+
+            if grb.z == 0:
+                i_z += 1
 
             for interval in grb.intervals:
 
@@ -1159,10 +1162,9 @@ class DataSet(object):
 
                     total_number_of_channels_used += datum.n_channels_used
 
-                if z == 0:
+                if grb.z == 0:
                     z_mask.append(0)
-                    unknown_id.append(j)
-                    j += 1
+                    unknown_id.append(i_z)
                 else:
                     z_mask.append(1)
                     unknown_id.append(0)
