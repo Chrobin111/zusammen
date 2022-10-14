@@ -1,4 +1,4 @@
-// unused
+// analytical form of the CPL normalization
 real ggrb_int_cpl(real alpha, real ec, real emin, real emax) {
   real i1 = gamma_q(2 + alpha, emin / ec) * tgamma(2 + alpha);
   real i2 = gamma_q(2 + alpha, emax / ec) * tgamma(2 + alpha);
