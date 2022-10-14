@@ -44,13 +44,6 @@ data {
   vector[N_intervals] dl; // luminosity distance
   vector[N_intervals] z; // redshift
 
-
-  // int N_gen_spectra;
-  // vector[N_gen_spectra] model_energy;
-
-  /* int N_correlation; */
-  /* vector[N_correlation] model_correlation; */
-
 }
 
 
@@ -93,18 +86,9 @@ transformed data {
 
 parameters {
 
-  //vector<lower=-1.8, upper=1.>[N_intervals] alpha;
   vector<lower=-10, upper=5>[N_intervals] alpha; // fit parameter
   vector<lower=-2, upper=6>[N_intervals] log_ec; // cut-off energy
-  //vector<lower=-5,upper=1>[N_intervals] log_K;
 
-  //vector<lower=0, upper=5>[N_intervals] log_epeak;
-  //vector<lower=0>[N_intervals] log_epeak;
-
-  // non-central parameterization of the energy flux
-  //real log_energy_flux_mu_raw;
-  //real<lower=0> log_energy_flux_sigma;
-  //vector[N_intervals] log_energy_flux_raw;
   vector[N_intervals] log_energy_flux;
 
 }
@@ -114,30 +98,20 @@ parameters {
 transformed parameters {
 
   vector[N_intervals] ec = pow(10, log_ec);
-  //vector[N_intervals] log_energy_flux;
-  //real log_energy_flux_mu;
   vector[N_intervals] energy_flux;
 
   vector[N_intervals] K;
 
 
-  //log_energy_flux_mu = log_energy_flux_mu_raw - 7;
-
-  //log_energy_flux = log_energy_flux_mu + log_energy_flux_raw * log_energy_flux_sigma;
   energy_flux = pow(10, log_energy_flux);
-  //vector[N_intervals] epeak;
-  //vector[N_intervals] log_energy_flux;
 
   // normalization
   for (n in 1:N_intervals){
 
     array[3] real theta = {1., alpha[n], ec[n]};
 
-    //epeak[n] = (2+alpha[n]) * pow(10, log_ec[n]);
-
     print(theta);
     K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
-    //K[n] = erg2kev * energy_flux[n] * inv( ggrb_int_cpl(alpha[n], ec[n], 10., 1.e3) );
 
   }
 
@@ -148,23 +122,11 @@ model {
 
   int grainsize = 1;
 
-  // log_epeak ~ normal(2.,1);
-
   log_energy_flux ~ normal(-7, 2);
-
-  //log_energy_flux_mu_raw ~ std_normal();
-  //log_energy_flux_sigma ~ std_normal();
-  //log_energy_flux_raw ~ std_normal();
 
   alpha ~ normal(-1,.5);
 
   log_ec ~ normal(2.,1);
-
-  // log_K ~ normal(-1, 1);
-
-  // print(alpha);
-  // print(log_ec);
-  // print(log_K);
 
   target += reduce_sum(partial_log_like, all_N, grainsize,  alpha,  ec,  K,  observed_counts,  background_counts, background_errors,  mask, N_channels_used,exposure,  ebounds_lo,  ebounds_hi,  ebounds_add,  ebounds_half, response, idx_background_zero, idx_background_nonzero, N_bkg_zero, N_bkg_nonzero, N_dets,  N_chan,  N_echan,  max_n_chan,  emin,  emax) ;
 
