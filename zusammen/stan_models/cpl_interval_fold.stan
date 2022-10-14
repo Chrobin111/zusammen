@@ -12,14 +12,17 @@ real partial_log_like(int[] n_slice, int start, int end, vector alpha, vector ec
 
     for (m in 1:N_dets[n]) {
 
-      expected_model_counts[m, : N_chan[n,m]] = (response[n, m,:N_chan[n,m], :N_echan[n,m]] * integral_flux(ebounds_lo[n, m, :N_echan[n, m]],
-                                                                                                            ebounds_hi[n, m, :N_echan[n, m]],
-                                                                                                            ebounds_add[n, m, :N_echan[n, m]],
-                                                                                                            ebounds_half[n, m, :N_echan[n, m]],
-                                                                                                            K[n],
-                                                                                                            ec[n],
-                                                                                                            alpha[n]
-                                                                                                            )) * exposure[n,m];
+      expected_model_counts[m, : N_chan[n,m]] = (
+        response[n, m,:N_chan[n,m], :N_echan[n,m]] * integral_flux(
+          ebounds_lo[n, m, :N_echan[n, m]],
+          ebounds_hi[n, m, :N_echan[n, m]],
+          ebounds_add[n, m, :N_echan[n, m]],
+          ebounds_half[n, m, :N_echan[n, m]],
+          K[n],
+          ec[n],
+          alpha[n]
+        )
+      ) * exposure[n,m];
 
       //  print(log_like);
 
