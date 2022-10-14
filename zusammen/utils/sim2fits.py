@@ -12,6 +12,7 @@ from threeML import TimeSeriesBuilder
 from threeML.utils.interval import Interval
 from typing import Union
 
+
 class GRBProcessor(object):
     def __init__(
         self,
@@ -19,7 +20,7 @@ class GRBProcessor(object):
         n_nai_to_use: int = 3,
         use_bb: bool = False,
         sig_min: Union[float, None] = None,
-        all_above_limit: bool = False
+        all_above_limit: bool = False,
     ):
         """
         :param gbm_grb:
@@ -30,8 +31,8 @@ class GRBProcessor(object):
         """
 
         self._grb_save = gbm_grb
-        assert n_nai_to_use > 0, "yo use some detectors"
 
+        assert n_nai_to_use > 0, "yo use some detectors"
         self._n_nai_to_use: int = int(n_nai_to_use)
 
         self._use_bb: bool = use_bb
@@ -141,8 +142,9 @@ class GRBProcessor(object):
                         p0=0.1,
                     )
                     bins_to_use = ts
-                    above_limit = np.zeros((len(self._lc_names), len(ts.bins)),
-                                           dtype=bool)
+                    above_limit = np.zeros(
+                        (len(self._lc_names), len(ts.bins)), dtype=bool
+                    )
                 else:
                     ts.read_bins(bins_to_use)
 
@@ -161,7 +163,6 @@ class GRBProcessor(object):
                     force_rsp_write=True,
                     overwrite=True,
                 )
-
 
                 if len(intervals) > 1:
                     fig = ts.view_lightcurve(use_binner=True)
@@ -210,7 +211,8 @@ class AnalysisBuilder(object):
         use_all: bool = False,
         use_bb: bool = False,
         sig_min: Union[float, None] = None,
-        all_above_limit: bool = False
+        all_above_limit: bool = False,
+        intervals_min: int = 0,
     ):
 
         if isinstance(survey_file, str):
@@ -226,12 +228,11 @@ class AnalysisBuilder(object):
         self._config_dict = collections.OrderedDict()
         for k, v in self._survey.items():
 
-            process = GRBProcessor(v.grb,
-                                   use_bb=use_bb,
-                                   sig_min=sig_min,
-                                   all_above_limit=all_above_limit)
+            process = GRBProcessor(
+                v.grb, use_bb=use_bb, sig_min=sig_min, all_above_limit=all_above_limit
+            )
 
-            if len(process.yaml_params["interval_ids"]) > 0:
+            if len(process.yaml_params["interval_ids"]) > intervals_min:
                 self._config_dict[k] = process.yaml_params
 
     def write_yaml(self, file_name: str) -> None:
