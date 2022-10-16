@@ -212,7 +212,7 @@ class AnalysisBuilder(object):
         use_bb: bool = False,
         sig_min: Union[float, None] = None,
         all_above_limit: bool = False,
-        intervals_min: int = 0,
+        intervals_min: int = 1,
     ):
 
         if isinstance(survey_file, str):
@@ -224,6 +224,12 @@ class AnalysisBuilder(object):
             assert isinstance(survey_file, Survey)
 
             self._survey = survey_file
+
+        if intervals_min < 1:
+            print(
+                "An event has to have at least one interval.\ninterval_min has been increased to 1."
+            )
+            intervals_min = 1
 
         self._config_dict = collections.OrderedDict()
         for k, v in self._survey.items():
