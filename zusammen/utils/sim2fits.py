@@ -142,7 +142,7 @@ class GRBProcessor(object):
                         p0=0.1,
                     )
                     bins_to_use = ts
-                    above_limit = np.zeros(
+                    above_limit = np.ones(
                         (len(self._lc_names), len(ts.bins)), dtype=bool
                     )
                 else:
