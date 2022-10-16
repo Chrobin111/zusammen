@@ -55,7 +55,6 @@ transformed data {
   real kev2erg = 1.6021766e-9; // keV to erg conversion
   real erg2kev = 6.24151e8; // erg to keV conversion
 
-  vector[N_intervals] dl2 = square(dl); // dl squared
   int N_total_channels = 0; // number of channels
   real emin = 10.; // minimum energy
   real emax = 1E4; // maximum energy
@@ -86,7 +85,7 @@ transformed data {
 
 parameters {
 
-  vector<lower=-10, upper=5>[N_intervals] alpha; // fit parameter
+  vector<lower=-1.999, upper=5>[N_intervals] alpha; // fit parameter
   vector<upper=6>[N_intervals] log_ec; // cut-off energy
 
   // non-central parameterization of the energy flux
@@ -104,8 +103,8 @@ transformed parameters {
   vector[N_intervals] log_energy_flux;
   real log_energy_flux_mu;
   vector[N_intervals] energy_flux;
-  vector[N_intervals] epeak;
-  vector[N_intervals] K; // = pow(10, log_K);
+
+  vector[N_intervals] K;
 
 
   log_energy_flux_mu = log_energy_flux_mu_raw - 7;
@@ -116,11 +115,9 @@ transformed parameters {
   // normalization
   for (n in 1:N_intervals){
 
-    array[3] real theta = {1., alpha[n], ec[n]};
-
-    epeak[n] = (2+alpha[n]) * pow(10, log_ec[n]);
-
-    K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
+    //array[3] real theta = {1., alpha[n], ec[n]};
+    //K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
+    K[n] = erg2kev * energy_flux[n] * inv(ggrb_int_cpl(alpha[n],ec[n],10.,1.e4));
 
   }
 

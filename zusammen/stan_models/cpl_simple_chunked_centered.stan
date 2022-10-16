@@ -55,7 +55,6 @@ transformed data {
   real kev2erg = 1.6021766e-9; // keV to erg conversion
   real erg2kev = 6.24151e8; // erg to keV conversion
 
-  vector[N_intervals] dl2 = square(dl); // dl squared
   int N_total_channels = 0; // number of channels
   real emin = 10.; // minimum energy
   real emax = 1E4; // maximum energy
@@ -86,8 +85,8 @@ transformed data {
 
 parameters {
 
-  vector<lower=-1.99999, upper=5>[N_intervals] alpha; // fit parameter
-  vector<lower=-2, upper=6>[N_intervals] log_ec; // cut-off energy
+  vector<lower=-1.999, upper=5>[N_intervals] alpha; // fit parameter
+  vector<upper=6>[N_intervals] log_ec; // cut-off energy
 
   vector[N_intervals] log_energy_flux;
 
@@ -108,10 +107,9 @@ transformed parameters {
   // normalization
   for (n in 1:N_intervals){
 
-    // array[3] real theta = {1., alpha[n], ec[n]};
-
-    // K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
-    K[n] = erg2kev * energy_flux[n] * inv(ggrb_int_cpl(alpha[n], ec[n], 10., 1.e4));
+    //array[3] real theta = {1., alpha[n], ec[n]};
+    //K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
+    K[n] = erg2kev * energy_flux[n] * inv(ggrb_int_cpl(alpha[n],ec[n],emin,emax));
 
   }
 
@@ -126,8 +124,8 @@ model {
 
   alpha ~ normal(-1,.5);
 
-  log_ec ~ normal(2.,1);
+  log_ec ~ normal(2.,2.);
 
-  target += reduce_sum(partial_log_like, all_N, grainsize,  alpha,  ec,  K,  observed_counts,  background_counts, background_errors,  mask, N_channels_used,exposure,  ebounds_lo,  ebounds_hi,  ebounds_add,  ebounds_half, response, idx_background_zero, idx_background_nonzero, N_bkg_zero, N_bkg_nonzero, N_dets,  N_chan,  N_echan,  max_n_chan,  emin,  emax) ;
+  target += reduce_sum(partial_log_like, all_N, grainsize,  alpha,  ec,  K,  observed_counts,  background_counts, background_errors,  mask, N_channels_used,exposure,  ebounds_lo,  ebounds_hi,  ebounds_add,  ebounds_half, response, idx_background_zero, idx_background_nonzero, N_bkg_zero, N_bkg_nonzero, N_dets,  N_chan,  N_echan,  max_n_chan,  emin,  emax);
 
 }
