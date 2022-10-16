@@ -96,7 +96,7 @@ transformed data {
 parameters {
 
   //vector<lower=-1.8, upper=1.>[N_intervals] alpha;
-  vector<lower=-10, upper=5>[N_intervals] alpha; // fit parameter
+  vector<lower=-1.9, upper=5>[N_intervals] alpha; // fit parameter
   vector<lower=-2, upper=6>[N_intervals] log_ec; // cut-off energy
   //vector<lower=-5,upper=1>[N_intervals] log_K;
 
@@ -140,7 +140,7 @@ transformed parameters {
   // normalization
   for (n in 1:N_intervals){
 
-    array[3] real theta = {1., alpha[n], ec[n]};
+    // array[3] real theta = {1., alpha[n], ec[n]};
 
     log_epeak[n] = log10(2+alpha[n]) + log_ec[n];
 
@@ -148,8 +148,8 @@ transformed parameters {
     energy_flux[n] = pow(10, log_energy_flux[n]);
 
     //print(theta);
-    K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
-    //K[n] = erg2kev * energy_flux[n] * inv( ggrb_int_cpl(alpha[n], ec[n], 10., 1.e3) );
+    //K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
+    K[n] = erg2kev * energy_flux[n] * inv( ggrb_int_cpl(alpha[n], ec[n], emin, emax) );
 
   }
 
