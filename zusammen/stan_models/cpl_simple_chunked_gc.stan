@@ -44,15 +44,6 @@ data {
   vector[N_intervals] dl; // luminosity distance
   vector[N_intervals] z; // redshift
 
-  //real maxSlope; // maximum value for gamma
-
-
-  // int N_gen_spectra;
-  // vector[N_gen_spectra] model_energy;
-
-  /* int N_correlation; */
-  /* vector[N_correlation] model_correlation; */
-
 }
 
 
@@ -95,18 +86,8 @@ transformed data {
 
 parameters {
 
-  //vector<lower=-1.8, upper=1.>[N_intervals] alpha;
-  vector<lower=-1.9, upper=5>[N_intervals] alpha; // fit parameter
+  vector<lower=-1.99, upper=5>[N_intervals] alpha; // fit parameter
   vector<lower=-2, upper=6>[N_intervals] log_ec; // cut-off energy
-  //vector<lower=-5,upper=1>[N_intervals] log_K;
-
-  //vector<lower=0, upper=5>[N_intervals] log_epeak;
-  //vector<lower=0>[N_intervals] log_epeak;
-
-  // non-central parameterization of the energy flux
-  //real log_energy_flux_mu_raw;
-  //real<lower=0> log_energy_flux_sigma;
-  //vector[N_intervals] log_energy_flux_raw;
 
 
   vector<lower=50>[N_grbs] log_Nrest; // GC normalization <lower=40, upper=65>
@@ -132,11 +113,6 @@ transformed parameters {
 
   vector[N_intervals] K;
 
-
-  //log_energy_flux_mu = log_energy_flux_mu_raw - 7;
-
-  //log_energy_flux = log_energy_flux_mu + log_energy_flux_raw * log_energy_flux_sigma;
-
   // normalization
   for (n in 1:N_intervals){
 
@@ -147,7 +123,6 @@ transformed parameters {
     log_energy_flux[n] = log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl[n])) + gamma[grb_id[n]] * (log10(1 + z[n]) + log_epeak[n] - 2);
     energy_flux[n] = pow(10, log_energy_flux[n]);
 
-    //print(theta);
     //K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
     K[n] = erg2kev * energy_flux[n] * inv( ggrb_int_cpl(alpha[n], ec[n], emin, emax) );
 
@@ -160,8 +135,6 @@ model {
 
   int grainsize = 1;
 
-  // log_epeak ~ normal(2.,1);
-
   alpha ~ normal(-1,.5);
   log_ec ~ normal(2.,1);
 
@@ -171,15 +144,6 @@ model {
   log_Nrest_mu_meta ~ normal(52, 5);
   gamma ~ normal(gamma_mu_meta, gamma_sig_meta);
   log_Nrest ~ normal(log_Nrest_mu_meta, log_Nrest_sig_meta);
-
-  //log_energy_flux_mu_raw ~ std_normal();
-  //log_energy_flux_sigma ~ std_normal();
-
-  // log_K ~ normal(-1, 1);
-
-  // print(alpha);
-  // print(log_ec);
-  // print(log_K);
 
   target += reduce_sum(partial_log_like, all_N, grainsize,  alpha,  ec,  K,  observed_counts,  background_counts, background_errors,  mask, N_channels_used,exposure,  ebounds_lo,  ebounds_hi,  ebounds_add,  ebounds_half, response, idx_background_zero, idx_background_nonzero, N_bkg_zero, N_bkg_nonzero, N_dets,  N_chan,  N_echan,  max_n_chan,  emin,  emax) ;
 

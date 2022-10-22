@@ -85,7 +85,7 @@ transformed data {
 
 parameters {
 
-  vector<lower=-1.999, upper=5>[N_intervals] alpha; // fit parameter
+  vector<lower=-1.99, upper=5>[N_intervals] alpha; // fit parameter
   vector<upper=6>[N_intervals] log_ec; // cut-off energy
 
   // non-central parameterization of the energy flux
