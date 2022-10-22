@@ -154,6 +154,7 @@ examples/data*
 examples/SynthGRB_*
 
 # Binaries
+zusammen/stan_models/analytic_test
 zusammen/stan_models/cpl_simple_chunked
 zusammen/stan_models/cpl_simple_chunked_centered
 zusammen/stan_models/cpl_simple_chunked_combined
