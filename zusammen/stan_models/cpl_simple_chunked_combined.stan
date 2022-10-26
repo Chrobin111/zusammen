@@ -116,6 +116,7 @@ transformed parameters {
   for (n in 1:N_intervals){
 
     //array[3] real theta = {1., alpha[n], ec[n]};
+
     //K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
     K[n] = erg2kev * energy_flux[n] * inv(ggrb_int_cpl(alpha[n],ec[n],10.,1.e4));
 
