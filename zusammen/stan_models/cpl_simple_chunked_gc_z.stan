@@ -90,7 +90,7 @@ transformed data {
 
 parameters {
 
-  vector<lower=-10, upper=5>[N_intervals] alpha; // fit parameter
+  vector<lower=-1.99, upper=5>[N_intervals] alpha; // fit parameter
   vector<lower=-2, upper=6>[N_intervals] log_ec; // cut-off energy
 
 

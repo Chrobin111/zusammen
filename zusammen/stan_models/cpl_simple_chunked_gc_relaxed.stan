@@ -85,8 +85,9 @@ transformed data {
 
 parameters {
 
-  vector<lower=-10, upper=5>[N_intervals] alpha; // fit parameter
+  vector<lower=-1.99, upper=5>[N_intervals] alpha; // fit parameter
   vector<lower=-2, upper=6>[N_intervals] log_ec; // cut-off energy
+
 
   vector<lower=50>[N_grbs] log_Nrest; // GC normalization <lower=40, upper=65>
   vector<lower=0>[N_grbs] gamma; // exponent

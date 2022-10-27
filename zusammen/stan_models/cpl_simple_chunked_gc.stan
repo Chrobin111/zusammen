@@ -55,7 +55,6 @@ transformed data {
   real kev2erg = 1.6021766e-9; // keV to erg conversion
   real erg2kev = 6.24151e8; // erg to keV conversion
 
-  //vector[N_intervals] dl2 = square(dl); // dl squared
   int N_total_channels = 0; // number of channels
   real emin = 10.; // minimum energy
   real emax = 1E4; // maximum energy
@@ -107,7 +106,6 @@ transformed parameters {
 
   vector[N_intervals] ec = pow(10, log_ec);
   vector[N_intervals] log_epeak;
-  //real log_energy_flux_mu;
   vector[N_intervals] log_energy_flux;
   vector[N_intervals] energy_flux;
 

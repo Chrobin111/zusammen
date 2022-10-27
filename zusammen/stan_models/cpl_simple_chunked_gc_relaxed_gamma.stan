@@ -85,13 +85,14 @@ transformed data {
 
 parameters {
 
-  vector<lower=-10, upper=5>[N_intervals] alpha; // fit parameter
+  vector<lower=-1.99, upper=5>[N_intervals] alpha; // fit parameter
   vector<lower=-2, upper=6>[N_intervals] log_ec; // cut-off energy
+
 
   vector<lower=50>[N_grbs] log_Nrest; // GC normalization <lower=40, upper=65>
   vector<lower=0>[N_grbs] gamma; // exponent
 
-  // hyperpriors (relaxed)
+  // hyperpriors
   real log_Nrest_mu_meta;
   real<lower=0> log_Nrest_sig_meta;
 
@@ -103,12 +104,10 @@ transformed parameters {
 
   vector[N_intervals] ec = pow(10, log_ec);
   vector[N_intervals] log_epeak;
-
   vector[N_intervals] log_energy_flux;
   vector[N_intervals] energy_flux;
 
   vector[N_intervals] K;
-
 
   // normalization
   for (n in 1:N_intervals){
