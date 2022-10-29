@@ -25,6 +25,7 @@ _available_models[
     "cpl_simple_chunked_gc_relaxed_Nrest"
 ] = "cpl_simple_chunked_gc_relaxed_Nrest.stan"
 _available_models["cpl_simple_chunked_gc_z"] = "cpl_simple_chunked_gc_z.stan"
+_available_models["cpl_simple_chunked_gc_test"] = "cpl_simple_chunked_gc_test.stan"
 
 
 class StanModel(object):
