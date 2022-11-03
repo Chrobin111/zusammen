@@ -7,6 +7,8 @@ _available_models = {}
 
 _available_models["analytic_test"] = "analytic_test.stan"
 _available_models["formula_test"] = "formula_test.stan"
+_available_models["model_test"] = "model_test.stan"
+_available_models["pgstat_test"] = "pgstat_test.stan"
 _available_models["cpl_simple_chunked"] = "cpl_simple_chunked.stan"
 _available_models["cpl_simple_chunked_centered"] = "cpl_simple_chunked_centered.stan"
 _available_models["cpl_simple_chunked_combined"] = "cpl_simple_chunked_combined.stan"
