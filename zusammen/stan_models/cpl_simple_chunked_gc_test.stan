@@ -89,7 +89,7 @@ parameters {
   vector<lower=-2, upper=6>[N_intervals] log_ec; // cut-off energy
 
 
-  vector<lower=50>[N_grbs] log_Nrest; // GC normalization <lower=40, upper=65>
+  // vector<lower=50>[N_grbs] log_Nrest; // GC normalization <lower=40, upper=65>
   // vector<lower=0>[N_grbs] gamma; // exponent
 
 }
@@ -113,7 +113,7 @@ transformed parameters {
     log_epeak[n] = log10(2+alpha[n]) + log_ec[n];
 
     // log_energy_flux[n] = log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl[n])) + gamma[grb_id[n]] * (log10(1 + z[n]) + log_epeak[n] - 2);
-    log_energy_flux[n] = log_Nrest[grb_id[n]] - (1.099 + 2 * log10(dl[n])) + 1.5 * (log10(1 + z[n]) + log_epeak[n] - 2);
+    log_energy_flux[n] = 52 - (1.099 + 2 * log10(dl[n])) + 1.5 * (log10(1 + z[n]) + log_epeak[n] - 2);
     energy_flux[n] = pow(10, log_energy_flux[n]);
 
     //K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
@@ -132,7 +132,7 @@ model {
   log_ec ~ normal(2.,1);
 
   // gamma ~ normal(1, 1);
-  log_Nrest ~ normal(52, 4);
+  // log_Nrest ~ normal(52, 4);
 
   target += reduce_sum(partial_log_like, all_N, grainsize,  alpha,  ec,  K,  observed_counts,  background_counts, background_errors,  mask, N_channels_used,exposure,  ebounds_lo,  ebounds_hi,  ebounds_add,  ebounds_half, response, idx_background_zero, idx_background_nonzero, N_bkg_zero, N_bkg_nonzero, N_dets,  N_chan,  N_echan,  max_n_chan,  emin,  emax) ;
 
