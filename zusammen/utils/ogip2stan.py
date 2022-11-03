@@ -68,7 +68,6 @@ class GRBDatum(object):
         self._background_error = background_error
         self._response = response
 
-        self._response = response
         self._ebounds = ebounds
         self._mc_energies = mc_energies
 
@@ -337,7 +336,6 @@ class GRBDatum(object):
         f.create_dataset("mask", data=self._mask, compression="lzf", shuffle=True)
 
         if is_file:
-
             f.close()
 
     @classmethod
@@ -494,6 +492,8 @@ class GRBInterval(object):
         # but not bad
 
         for det in sorted_dets:
+
+            print(det)
 
             # match pha
 
@@ -687,6 +687,8 @@ class GRBData(object):
 
         for i in interval_ids:
 
+            print(f"Interval {i}")
+
             # observations really low!
             interval = GRBInterval.from_dict(
                 d, grb_name, spectrum_number=i + 1, mc_bound_limit=mc_bound_limit
@@ -862,6 +864,8 @@ class DataSet(object):
         grbs = []
 
         for grb_name, d2 in d.items():
+
+            print(grb_name)
 
             # creat a GRB data with the dict loader
             # which will recurse and build things
