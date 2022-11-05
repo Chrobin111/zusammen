@@ -2,20 +2,17 @@ import collections
 import os
 from glob import glob
 from pathlib import Path
-
-from typing import Dict, Optional, List
-
+from typing import Dict, List, Optional
 
 import h5py
 import numpy as np
 import yaml
 from astropy.cosmology import WMAP9 as cosmo
-
+from threeML import DataList
 from threeML.plugins.DispersionSpectrumLike import DispersionSpectrumLike
 from threeML.plugins.OGIPLike import OGIPLike
 from threeML.utils.OGIP.response import InstrumentResponse
 from threeML.utils.spectrum.binned_spectrum import BinnedSpectrumWithDispersion
-from threeML import DataList
 
 
 def sanitize_filename(filename, abspath: bool = False) -> Path:
@@ -493,8 +490,6 @@ class GRBInterval(object):
 
         for det in sorted_dets:
 
-            print(det)
-
             # match pha
 
             phas = glob(os.path.join(directory, f"*{det}*.pha"))
@@ -687,8 +682,6 @@ class GRBData(object):
 
         for i in interval_ids:
 
-            print(f"Interval {i}")
-
             # observations really low!
             interval = GRBInterval.from_dict(
                 d, grb_name, spectrum_number=i + 1, mc_bound_limit=mc_bound_limit
@@ -864,8 +857,6 @@ class DataSet(object):
         grbs = []
 
         for grb_name, d2 in d.items():
-
-            print(grb_name)
 
             # creat a GRB data with the dict loader
             # which will recurse and build things
