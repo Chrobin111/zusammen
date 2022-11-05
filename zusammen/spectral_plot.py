@@ -1,5 +1,6 @@
-from threeML.io.plotting.data_residual_plot import ResidualPlot
 import warnings
+
+from threeML.io.plotting.data_residual_plot import ResidualPlot
 
 warnings.simplefilter("ignore")
 # from threeML_utils.colors import Colors
@@ -33,16 +34,15 @@ def display_posterior_model_counts(
     q_level=68,
     gradient=0.6,
     axes=None,
+    show_residuals=False,
     **kwargs
 ):
-
-    show_residuals = False
 
     if axes != None:
         residual_plot = ResidualPlot(show_residuals=show_residuals, model_subplot=axes)
     else:
         residual_plot = ResidualPlot(show_residuals=show_residuals)
-        axes = residual_plot.data_axis
+        axes = [residual_plot.data_axis, residual_plot.residual_axis]
 
     plugin.set_model(model)
 
@@ -59,7 +59,7 @@ def display_posterior_model_counts(
             model_color=model_color,
             min_rate=min_rate,
             step=False,
-            show_residuals=False,
+            show_residuals=show_residuals,
             show_data=False,
             show_legend=show_legend,
             ratio_residuals=False,
@@ -76,7 +76,7 @@ def display_posterior_model_counts(
         model_color=model_color,
         min_rate=min_rate,
         step=True,
-        show_residuals=False,
+        show_residuals=show_residuals,
         show_data=True,
         show_legend=show_legend,
         ratio_residuals=False,
