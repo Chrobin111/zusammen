@@ -72,8 +72,8 @@ transformed data {
     all_N[n] = n;
 
     for (m in 1:N_dets[n]) {
-      ebounds_half[n, m, :N_echan[n, m]] = 0.5*(ebounds_hi[n, m, :N_echan[n, m]]+ebounds_lo[n, m, :N_echan[n, m]]);
-      ebounds_add[n, m, :N_echan[n, m]] = (ebounds_hi[n, m, :N_echan[n, m]] - ebounds_lo[n, m, :N_echan[n, m]])/6.0;
+      ebounds_half[n, m, :N_echan[n, m]] = 0.5 * (ebounds_hi[n, m, :N_echan[n, m]] + ebounds_lo[n, m, :N_echan[n, m]]);
+      ebounds_add[n, m, :N_echan[n, m]] = (ebounds_hi[n, m, :N_echan[n, m]] - ebounds_lo[n, m, :N_echan[n, m]]) / 6.0;
       N_total_channels += N_channels_used[n,m];
     }
 
@@ -109,7 +109,7 @@ transformed parameters {
 
     //array[3] real theta = {1., alpha[n], ec[n]};
     //K[n] = erg2kev * energy_flux[n]  * inv(integrate_1d(cpl_flux_integrand, 10., 1.e4, theta, x_r, x_i));
-    K[n] = erg2kev * energy_flux[n] * inv(ggrb_int_cpl(alpha[n],ec[n],emin,emax));
+    K[n] = erg2kev * energy_flux[n] * inv(ggrb_int_cpl(alpha[n], ec[n], emin, emax));
 
   }
 
@@ -126,6 +126,6 @@ model {
 
   log_ec ~ normal(2.,2.);
 
-  target += reduce_sum(partial_log_like, all_N, grainsize,  alpha,  ec,  K,  observed_counts,  background_counts, background_errors,  mask, N_channels_used,exposure,  ebounds_lo,  ebounds_hi,  ebounds_add,  ebounds_half, response, idx_background_zero, idx_background_nonzero, N_bkg_zero, N_bkg_nonzero, N_dets,  N_chan,  N_echan,  max_n_chan,  emin,  emax);
+  target += reduce_sum(partial_log_like, all_N, grainsize,  alpha,  ec,  K,  observed_counts,  background_counts, background_errors,  mask, N_channels_used, exposure,  ebounds_lo,  ebounds_hi,  ebounds_add,  ebounds_half, response, idx_background_zero, idx_background_nonzero, N_bkg_zero, N_bkg_nonzero, N_dets,  N_chan,  N_echan,  max_n_chan,  emin,  emax);
 
 }
