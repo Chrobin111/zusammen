@@ -42,7 +42,10 @@ def display_posterior_model_counts(
         residual_plot = ResidualPlot(show_residuals=show_residuals, model_subplot=axes)
     else:
         residual_plot = ResidualPlot(show_residuals=show_residuals)
-        axes = [residual_plot.data_axis, residual_plot.residual_axis]
+        if show_residuals:
+            axes = [residual_plot.data_axis, residual_plot.residual_axis]
+        else:
+            axes = residual_plot.data_axis
 
     plugin.set_model(model)
 
