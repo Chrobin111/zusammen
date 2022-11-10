@@ -132,7 +132,7 @@ model {
   alpha ~ normal(-1,.5);
   log_ec ~ normal(2.,1);
 
-  gamma ~ normal(1, 1);
+  gamma ~ normal(1.5, 1);
   log_Nrest ~ normal(52, 4);
 
   target += reduce_sum(partial_log_like, all_N, grainsize,  alpha,  ec,  K,  observed_counts,  background_counts, background_errors,  mask, N_channels_used,exposure,  ebounds_lo,  ebounds_hi,  ebounds_add,  ebounds_half, response, idx_background_zero, idx_background_nonzero, N_bkg_zero, N_bkg_nonzero, N_dets,  N_chan,  N_echan,  max_n_chan,  emin,  emax) ;
