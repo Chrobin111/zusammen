@@ -13,6 +13,7 @@ _available_models["cpl_simple_chunked"] = "cpl_simple_chunked.stan"
 _available_models["cpl_simple_chunked_centered"] = "cpl_simple_chunked_centered.stan"
 _available_models["cpl_simple_chunked_combined"] = "cpl_simple_chunked_combined.stan"
 _available_models["cpl_simple_chunked_gc"] = "cpl_simple_chunked_gc.stan"
+_available_models["cpl_simple_chunked_gc_uniform"] = "cpl_simple_chunked_gc_uniform.stan"
 _available_models[
     "cpl_simple_chunked_gc_vectorized"
 ] = "cpl_simple_chunked_gc_vectorized.stan"
@@ -20,6 +21,9 @@ _available_models["cpl_simple_chunked_gc_cauchy"] = "cpl_simple_chunked_gc_cauch
 _available_models[
     "cpl_simple_chunked_gc_relaxed"
 ] = "cpl_simple_chunked_gc_relaxed.stan"
+_available_models[
+    "cpl_simple_chunked_gc_relaxed_uniform"
+] = "cpl_simple_chunked_gc_relaxed_uniform.stan"
 _available_models[
     "cpl_simple_chunked_gc_relaxed_gamma"
 ] = "cpl_simple_chunked_gc_relaxed_gamma.stan"
