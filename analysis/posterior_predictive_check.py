@@ -55,9 +55,15 @@ class PPC:
         interval_in_grb=False,
     ) -> Tuple[np.ndarray, np.ndarray]:
 
-        assert chain < self.chains
-        assert draws <= self.draws
-        assert grb < self.N_grbs
+        assert (
+            chain >= 0 and chain < self.chains
+        ), f"Select a chain between 0 and {self.chains - 1}"
+        assert (
+            draws > 0 and draws <= self.draws
+        ), f"Select draws between 1 and {self.draws}"
+        assert (
+            grb >= 0 and grb < self.N_grbs
+        ), f"Select a GRB between 0 and {self.N_grbs - 1}"
 
         if interval_in_grb:
             interval_final = np.where(self.grb_id == grb + 1)[0][interval]
