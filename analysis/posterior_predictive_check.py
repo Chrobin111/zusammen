@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import arviz as av
 import numpy as np
 
@@ -5,6 +7,7 @@ import numpy as np
 class PPC:
     def __init__(self, data: dict, res: av.InferenceData):
         self.N_intervals = data["N_intervals"]
+        self.N_grbs = data["N_grbs"]
         self.chains = res.posterior.gamma.shape[0]
         self.draws = res.posterior.gamma.shape[1]
 
@@ -50,7 +53,12 @@ class PPC:
         interval: int,
         detector: int,
         interval_in_grb=False,
-    ):
+    ) -> Tuple[np.ndarray, np.ndarray]:
+
+        assert chain < self.chains
+        assert draws <= self.draws
+        assert grb < self.N_grbs
+
         if interval_in_grb:
             interval_final = np.where(self.grb_id == grb + 1)[0][interval]
         else:
