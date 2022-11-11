@@ -1,16 +1,14 @@
 import collections
-
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 import yaml
-
 from cosmogrb.io.gbm_fits import grbsave_to_gbm_fits
 from cosmogrb.universe.survey import Survey
 from cosmogrb.utils.file_utils import if_directory_not_existing_then_make
 from threeML import TimeSeriesBuilder
 from threeML.utils.interval import Interval
-from typing import Union
 
 
 class GRBProcessor(object):
@@ -21,6 +19,7 @@ class GRBProcessor(object):
         use_bb: bool = False,
         sig_min: Union[float, None] = None,
         all_above_limit: bool = False,
+        save_directory: str = "",
     ):
         """
         :param gbm_grb:
@@ -45,7 +44,16 @@ class GRBProcessor(object):
 
         self._config_dict["z"] = float(self._grb_save.z)
 
-        if_directory_not_existing_then_make(self._grb_save.name)
+        if save_directory == "":
+            self._save_directory = save_directory
+        else:
+            if save_directory.endswith("/"):
+                self._save_directory = save_directory
+            else:
+                self._save_directory = save_directory + "/"
+            if_directory_not_existing_then_make(self._save_directory)
+
+        if_directory_not_existing_then_make(self._save_directory + self._grb_save.name)
 
         # gets the light curves we want
         self._setup_order_by_distance()
@@ -96,13 +104,15 @@ class GRBProcessor(object):
 
         self._fits_files = grbsave_to_gbm_fits(
             self._grb_save,
-            destination=self._grb_save.name,
+            destination=self._save_directory + self._grb_save.name,
             detectors=self._lc_names,
         )
 
     def _threeml_process(self):
 
-        self._config_dict["dir"] = str(Path(self._grb_save.name).absolute())
+        self._config_dict["dir"] = str(
+            Path(self._save_directory + self._grb_save.name).absolute()
+        )
 
         det_dic = {}
 
@@ -156,7 +166,7 @@ class GRBProcessor(object):
                     above_limit[i] = sig > self._sig_min
 
                 ts.write_pha_from_binner(
-                    file_name=Path(self._grb_save.name) / name,
+                    file_name=Path(self._save_directory + self._grb_save.name) / name,
                     start=-25,
                     stop=self._grb_save.duration + 1,
                     # inner=True,
@@ -168,7 +178,7 @@ class GRBProcessor(object):
                     fig = ts.view_lightcurve(use_binner=True)
 
                     fig.savefig(
-                        f"{Path(self._grb_save.name) / name}_lc.png",
+                        f"{Path(self._save_directory + self._grb_save.name) / name}_lc.png",
                         bbox_inches="tight",
                     )
 
@@ -181,7 +191,7 @@ class GRBProcessor(object):
                 plugin = ts.to_spectrumlike()
 
                 plugin.write_pha(
-                    filename=Path(self._grb_save.name) / name,
+                    filename=Path(self._save_directory + self._grb_save.name) / name,
                     force_rsp_write=True,
                     overwrite=True,
                 )
@@ -213,6 +223,7 @@ class AnalysisBuilder(object):
         sig_min: Union[float, None] = None,
         all_above_limit: bool = False,
         intervals_min: int = 1,
+        save_directory: str = "",
     ):
 
         if isinstance(survey_file, str):
@@ -235,7 +246,11 @@ class AnalysisBuilder(object):
         for k, v in self._survey.items():
 
             process = GRBProcessor(
-                v.grb, use_bb=use_bb, sig_min=sig_min, all_above_limit=all_above_limit
+                v.grb,
+                use_bb=use_bb,
+                sig_min=sig_min,
+                all_above_limit=all_above_limit,
+                save_directory=save_directory,
             )
 
             if len(process.yaml_params["interval_ids"]) > intervals_min:
