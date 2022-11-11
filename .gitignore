@@ -132,10 +132,10 @@ dmypy.json
 /zusammen/stan_models/*.o
 
 # hdf5
-*.h5
 *.yml
 *.rsp
 *.pha
+*.fits
 
 
 # Dask
@@ -152,6 +152,8 @@ dataframes/data
 # Simulations
 examples/data*
 examples/SynthGRB_*
+analysis/inference/SynthGRB_*
+analysis/simulation
 
 # Binaries
 zusammen/stan_models/analytic_test
