@@ -134,8 +134,11 @@ dmypy.json
 # hdf5
 *.yml
 *.rsp
+*.rsp2
 *.pha
 *.fits
+*.fit
+*.fit.gz
 
 
 # Dask
@@ -173,6 +176,9 @@ zusammen/stan_models/cpl_simple_chunked_gc_relaxed_gamma
 zusammen/stan_models/cpl_simple_chunked_gc_relaxed_Nrest
 zusammen/stan_models/cpl_simple_chunked_gc_z
 zusammen/stan_models/cpl_simple_chunked_gc_test
+zusammen/stan_models/cpl_simple_chunked_gc_global
+zusammen/stan_models/cpl_simple_chunked_gc_global_gamma
+zusammen/stan_models/cpl_simple_chunked_gc_global_Nrest
 
 # Mac
 .DS_Store
