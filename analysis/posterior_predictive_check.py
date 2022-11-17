@@ -21,6 +21,10 @@ class PPC:
         self.ebounds_lo = data["ebounds_lo"]
         self.ebounds_hi = data["ebounds_hi"]
 
+        self.observed_counts = data["observed_counts"]
+        self.background_counts = data["background_counts"]
+        self.background_errors = data["background_errors"]
+
         self.response = data["response"]
         self.exposure = data["exposure"]
         self.N_chan = data["N_chan"]
@@ -83,6 +87,9 @@ class PPC:
         ppc_expected_model_counts = np.zeros(
             (draws, self.N_chan[interval_final, detector])
         )
+        ppc_expected_background_counts = np.zeros(
+            (draws, self.N_chan[interval_final, detector])
+        )
 
         for s in range(draws):
             ppc_expected_model_counts[s, : self.N_chan[interval_final, detector]] = (
@@ -109,7 +116,75 @@ class PPC:
                 )
             ) * self.exposure[interval_final, detector]
 
-        ppc_sampled_counts = np.random.poisson(ppc_expected_model_counts)
+            MB = (
+                self.background_counts
+                + ppc_expected_model_counts[s, : self.N_chan[interval_final, detector]]
+            )
+
+            ppc_expected_background_counts[
+                s, : self.N_chan[interval_final, detector]
+            ] = 0.5 * (
+                np.sqrt(
+                    MB[
+                        interval_final,
+                        detector,
+                        : self.N_echan[interval_final, detector],
+                    ]
+                    ** 2
+                    - 2
+                    * self.background_errors[
+                        interval_final,
+                        detector,
+                        : self.N_echan[interval_final, detector],
+                    ]
+                    ** 2
+                    * (
+                        MB[
+                            interval_final,
+                            detector,
+                            : self.N_echan[interval_final, detector],
+                        ]
+                        - 2
+                        * self.observed_counts[
+                            interval_final,
+                            detector,
+                            : self.N_echan[interval_final, detector],
+                        ]
+                    )
+                    + self.background_errors[
+                        interval_final,
+                        detector,
+                        : self.N_echan[interval_final, detector],
+                    ]
+                    ** 4
+                )
+                + self.background_counts[
+                    interval_final,
+                    detector,
+                    : self.N_echan[interval_final, detector],
+                ]
+                - ppc_expected_model_counts[s, : self.N_chan[interval_final, detector]]
+                - self.background_errors[
+                    interval_final,
+                    detector,
+                    : self.N_echan[interval_final, detector],
+                ]
+                ** 2
+            )
+
+        #   int N = num_elements(expected_model_counts);
+
+        #   vector[N] MB = background_counts + expected_model_counts;
+        #   vector[N] s2 = square(background_error);
+
+        #   vector[N] b = 0.5 * (
+        #     sqrt(square(MB) - 2 * s2 .* (MB - 2 * observed_counts) + square(s2))
+        # 		+ background_counts - expected_model_counts - s2
+        #   );
+
+        ppc_sampled_counts = np.random.poisson(
+            ppc_expected_model_counts + ppc_expected_background_counts
+        )
 
         return cenergies, ppc_sampled_counts
 
