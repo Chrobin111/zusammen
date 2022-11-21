@@ -492,7 +492,7 @@ class GRBInterval(object):
 
             # match pha
 
-            phas = glob(os.path.join(directory, f"*{det}*.pha"))
+            phas = glob(os.path.join(directory, f"{det}*.pha"))
 
             obs_file = [f for f in phas if "bak" not in f][0]
 
