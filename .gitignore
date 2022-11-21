@@ -155,8 +155,8 @@ dataframes/data
 # Simulations
 examples/data*
 examples/SynthGRB_*
-analysis/inference/SynthGRB_*
-analysis/simulation
+analysis/simulation/SynthGRB_*
+analysis/simulation/*/SynthGRB_*
 
 # Binaries
 zusammen/stan_models/analytic_test
