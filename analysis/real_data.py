@@ -7,7 +7,7 @@ from threeML import FermiGBMBurstCatalog, TimeSeriesBuilder
 
 
 class AnalysisBuilder:
-    def __init__(self, download_name, data_directory, sig_min) -> None:
+    def __init__(self, download_name, data_directory, sig_min, interval_min) -> None:
         self._gbm_catalog = FermiGBMBurstCatalog()
         self._yaml_dict = OrderedDict()
 
@@ -17,6 +17,7 @@ class AnalysisBuilder:
 
         self._data_directory = data_directory
         self._sig_min = sig_min
+        self._interval_min = interval_min
 
         self._threeml_process()
 
@@ -72,14 +73,15 @@ class AnalysisBuilder:
 
                 interval_ids = np.argwhere(np.any(above_limit, axis=0)).flatten()
 
-            self._yaml_dict[grb] = OrderedDict()
+            if len(interval_ids) < self._interval_min:
+                self._yaml_dict[grb] = OrderedDict()
 
-            self._yaml_dict[grb]["z"] = float(dload["z"])
-            self._yaml_dict[grb]["dir"] = os.path.abspath(
-                self._data_directory + "/" + grb
-            )
-            self._yaml_dict[grb]["interval_ids"] = interval_ids.tolist()
-            self._yaml_dict[grb]["detectors"] = {i: j for i, j in selection.items()}
+                self._yaml_dict[grb]["z"] = float(dload["z"])
+                self._yaml_dict[grb]["dir"] = os.path.abspath(
+                    self._data_directory + "/" + grb
+                )
+                self._yaml_dict[grb]["interval_ids"] = interval_ids.tolist()
+                self._yaml_dict[grb]["detectors"] = {i: j for i, j in selection.items()}
 
     def write_yaml(self, file_name: str) -> None:
         with open(file_name, "w") as f:
