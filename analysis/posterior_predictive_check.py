@@ -53,9 +53,9 @@ class PPC:
         self,
         chain: int,
         draws: int,
-        grb: int,
         interval: int,
         detector: int,
+        grb: int = 0,
         interval_in_grb=False,
     ) -> Tuple[np.ndarray, np.ndarray]:
 
