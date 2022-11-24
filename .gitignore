@@ -157,6 +157,8 @@ examples/data*
 examples/SynthGRB_*
 analysis/simulation/SynthGRB_*
 analysis/simulation/*/SynthGRB_*
+analysis/real_data/GRB*
+analysis/real_data/*/GRB*
 
 # Binaries
 zusammen/stan_models/analytic_test
