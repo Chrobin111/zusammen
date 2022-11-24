@@ -1,9 +1,17 @@
 import os
+import sys
 from collections import OrderedDict
+from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import yaml
 from threeML import FermiGBMBurstCatalog, TimeSeriesBuilder
+
+real_data_dir = os.path.abspath("real_data")
+if real_data_dir not in sys.path:
+    sys.path.append(real_data_dir)
+from get_data import get_data, get_number_of_intervals
 
 
 class AnalysisBuilder:
@@ -86,3 +94,64 @@ class AnalysisBuilder:
     def write_yaml(self, file_name: str) -> None:
         with open(file_name, "w") as f:
             yaml.dump(self._yaml_dict, stream=f, default_flow_style=False)
+
+
+class SynchSample:
+    def __init__(
+        self,
+        base_path,
+        grb_names,
+        sig_min: Optional[float] = None,
+        interval_min: int = 1,
+    ):
+        if isinstance(base_path, str):
+            self._base_path = Path(base_path)
+        else:
+            self._base_path = base_path
+        self._grb_names = grb_names
+        self._sig_min = sig_min
+        self._interval_min = interval_min
+        self._grbs = OrderedDict()
+
+        self._threeml_process()
+
+    def _threeml_process(self):
+        for grb in self._grb_names:
+            n_intervals = get_number_of_intervals(self._base_path, grb)
+            intervals = []
+            all_detectors = []
+
+            for interval in range(n_intervals):
+                spectra = get_data(self._base_path, grb, interval)
+                detectors_per_interval = []
+
+                significant = False
+                for spectrum in spectra:
+                    detectors_per_interval.append(spectrum._name)
+                    if spectrum.significance >= self._sig_min:
+                        significant = True
+                if significant:
+                    intervals.append(interval)
+                    all_detectors.append(detectors_per_interval)
+
+            if len(intervals) < self._interval_min:
+                continue
+
+            for dets1, dets2 in zip(all_detectors[1:], all_detectors):
+                assert dets1 == dets2
+
+            self._grbs[grb] = OrderedDict()
+            self._grbs[grb]["dir"] = str((self._base_path / grb).absolute())
+            self._grbs[grb]["interval_ids"] = intervals
+            self._grbs[grb]["detectors"] = OrderedDict()
+            for det in all_detectors[0]:
+                active = ""
+                if det.startswith("n"):
+                    active = "10-900"
+                elif det.startswith("b"):
+                    active = "250-10000"
+                self._grbs[grb]["detectors"][det] = active
+
+    def write_yaml(self, file_name: str) -> None:
+        with open(file_name, "w") as f:
+            yaml.dump(self._grbs, stream=f, default_flow_style=False)
