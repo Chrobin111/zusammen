@@ -89,7 +89,7 @@ parameters {
   vector<lower=-2, upper=6>[N_intervals] log_ec; // cut-off energy
 
 
-  vector<lower=50>[N_grbs] log_Nrest; // GC normalization <lower=40, upper=65>
+  vector[N_grbs] log_Nrest; // GC normalization <lower=40, upper=65>
   vector<lower=0>[N_grbs] gamma; // exponent
 
   // hyperpriors

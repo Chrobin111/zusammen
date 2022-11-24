@@ -89,7 +89,7 @@ parameters {
   vector<lower=-2, upper=6>[N_intervals] log_ec; // cut-off energy
 
 
-  real<lower=50> log_Nrest; // GC normalization <lower=40, upper=65>
+  real log_Nrest; // GC normalization <lower=40, upper=65>
   real<lower=0> gamma; // exponent
 
 }
