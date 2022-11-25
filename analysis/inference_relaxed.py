@@ -14,11 +14,11 @@ from zusammen import DataSet
 from zusammen.stan_models.stan_model import get_model
 
 inference_folder = "inference/"
-data_folder = "real_data/"
-data_name = "data"
+data_folder = "simulation/"
+data_name = "data_2_sig_5"
 
-model_name = "cpl_simple_chunked_gc_relaxed"
-inference_name = "real_relaxed_3_sig_5_1000"
+model_name = "cpl_simple_chunked_gc"
+inference_name = "simulated_2_sig_5_1000"
 
 ds = DataSet.from_hdf5_file(data_folder + data_name + ".h5")
 data = ds.to_stan_dict()
@@ -52,8 +52,8 @@ fit = m.model.sample(
     iter_warmup=n_warmup,
     iter_sampling=n_sampling,
     max_treedepth=15,
-    adapt_delta=0.9,
-    # step_size=0.1,
+    adapt_delta=0.99,
+    step_size=0.1,
     show_progress=True,
     refresh=1,
 )
