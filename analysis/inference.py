@@ -17,7 +17,7 @@ inference_folder = "inference/"
 data_folder = "real_data/"
 data_name = "data"
 
-model_name = "cpl_simple_chunked_gc_relaxed"
+model_name = "cpl_simple_chunked_gc"
 inference_name = "real_sig_5_1000"
 
 ds = DataSet.from_hdf5_file(data_folder + data_name + ".h5")
