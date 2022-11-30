@@ -2,20 +2,17 @@ import collections
 import os
 from glob import glob
 from pathlib import Path
-
-from typing import Dict, Optional, List
-
+from typing import Dict, List, Optional
 
 import h5py
 import numpy as np
 import yaml
 from astropy.cosmology import WMAP9 as cosmo
-
+from threeML import DataList
 from threeML.plugins.DispersionSpectrumLike import DispersionSpectrumLike
 from threeML.plugins.OGIPLike import OGIPLike
 from threeML.utils.OGIP.response import InstrumentResponse
 from threeML.utils.spectrum.binned_spectrum import BinnedSpectrumWithDispersion
-from threeML import DataList
 
 
 def sanitize_filename(filename, abspath: bool = False) -> Path:
@@ -48,6 +45,7 @@ class GRBDatum(object):
         significance,
         tstart: Optional[float] = None,
         tstop: Optional[float] = None,
+        mc_bound_limit: Optional[float] = None,
     ) -> None:
 
         self._n_chans = len(observation)
@@ -67,7 +65,6 @@ class GRBDatum(object):
         self._background_error = background_error
         self._response = response
 
-        self._response = response
         self._ebounds = ebounds
         self._mc_energies = mc_energies
 
@@ -77,6 +74,12 @@ class GRBDatum(object):
 
         self._tstart: Optional[float] = tstart
         self._tstop: Optional[float] = tstop
+        self._mc_bound_limit = mc_bound_limit
+
+        if self._mc_bound_limit is not None:
+            self._mc_index_mask = self._mc_energies[1:] < self._mc_bound_limit
+        else:
+            self._mc_index_mask = np.ones(len(self._mc_energies[1:]), dtype=bool)
 
     @property
     def name(self):
@@ -84,11 +87,11 @@ class GRBDatum(object):
 
     @property
     def response(self):
-        return self._response
+        return self._response[:, self._mc_index_mask]
 
     @property
     def response_transpose(self):
-        return self._response.T
+        return self.response.T
 
     @property
     def observation(self):
@@ -136,7 +139,7 @@ class GRBDatum(object):
 
     @property
     def n_echans(self):
-        return self._response.shape[1]
+        return self.response.shape[1]
 
     @property
     def exposure(self):
@@ -148,15 +151,17 @@ class GRBDatum(object):
 
     @property
     def ebounds(self):
+        if self._mc_bound_limit is not None:
+            return self._mc_energies[self._mc_energies < self._mc_bound_limit]
         return self._mc_energies
 
     @property
     def ebounds_lo(self):
-        return self._mc_energies[:-1]
+        return self.ebounds[:-1]
 
     @property
     def ebounds_hi(self):
-        return self._mc_energies[1:]
+        return self.ebounds[1:]
 
     @property
     def cbounds(self):
@@ -164,11 +169,11 @@ class GRBDatum(object):
 
     @property
     def cbounds_lo(self):
-        return self._ebounds[:-1]
+        return self.cbounds[:-1]
 
     @property
     def cbounds_hi(self):
-        return self._ebounds[1:]
+        return self.cbounds[1:]
 
     @property
     def tstart(self) -> Optional[float]:
@@ -188,9 +193,9 @@ class GRBDatum(object):
         """
         # create the response
         rsp = InstrumentResponse(
-            matrix=self._response,
-            ebounds=self._ebounds,
-            monte_carlo_energies=self._mc_energies,
+            matrix=self.response,
+            ebounds=self.cbounds,
+            monte_carlo_energies=self.ebounds,
         )
 
         observation = BinnedSpectrumWithDispersion(
@@ -216,7 +221,16 @@ class GRBDatum(object):
         )
 
     @classmethod
-    def from_ogip(cls, name, obs_file, bkg_file, rsp, selection, spectrum_number=1):
+    def from_ogip(
+        cls,
+        name,
+        obs_file,
+        bkg_file,
+        rsp,
+        selection,
+        spectrum_number=1,
+        mc_bound_limit=None,
+    ):
         """
         Create the base data from FITS files.
 
@@ -244,8 +258,10 @@ class GRBDatum(object):
         )
 
         # set the mask
-
         ogip.set_active_measurements(selection)
+
+        # ogip.rebin_on_background(1)
+        # ogip.rebin_on_source(1)
 
         return cls(
             name,
@@ -260,6 +276,7 @@ class GRBDatum(object):
             ogip.significance,
             ogip.tstart,
             ogip.tstop,
+            mc_bound_limit=mc_bound_limit,
         )
 
     def to_hdf5_file_or_group(self, name):
@@ -279,7 +296,7 @@ class GRBDatum(object):
 
         else:
 
-            if_file = True
+            is_file = True
             f = h5py.File(name, "w")
 
         f.attrs["name"] = self._name
@@ -304,19 +321,18 @@ class GRBDatum(object):
             shuffle=True,
         )
         f.create_dataset(
-            "response", data=self._response, compression="lzf", shuffle=True
+            "response", data=self.response, compression="lzf", shuffle=True
         )
         f.create_dataset(
             "mc_energies",
-            data=self._mc_energies,
+            data=self.ebounds,
             compression="lzf",
             shuffle=True,
         )
-        f.create_dataset("ebounds", data=self._ebounds, compression="lzf", shuffle=True)
+        f.create_dataset("ebounds", data=self.cbounds, compression="lzf", shuffle=True)
         f.create_dataset("mask", data=self._mask, compression="lzf", shuffle=True)
 
         if is_file:
-
             f.close()
 
     @classmethod
@@ -340,7 +356,7 @@ class GRBDatum(object):
 
         else:
 
-            if_file = True
+            is_file = True
             f = h5py.File(name, "r")
 
         # extract all the shit
@@ -444,7 +460,7 @@ class GRBInterval(object):
         return self._max_n_chans
 
     @classmethod
-    def from_dict(cls, d, grb_name, spectrum_number=1):
+    def from_dict(cls, d, grb_name, spectrum_number=1, mc_bound_limit=None):
         """
         create from a dictionary that is initially
         from the yaml file and will trigger the reading
@@ -476,7 +492,7 @@ class GRBInterval(object):
 
             # match pha
 
-            phas = glob(os.path.join(directory, f"*{det}*.pha"))
+            phas = glob(os.path.join(directory, f"{det}*.pha"))
 
             obs_file = [f for f in phas if "bak" not in f][0]
 
@@ -487,7 +503,13 @@ class GRBInterval(object):
             rsp_file = glob(os.path.join(directory, f"*{det}*.rsp"))[0]
 
             datum = GRBDatum.from_ogip(
-                det, obs_file, bak_file, rsp_file, dets[det], spectrum_number
+                det,
+                obs_file,
+                bak_file,
+                rsp_file,
+                dets[det],
+                spectrum_number,
+                mc_bound_limit=mc_bound_limit,
             )
 
             data.append(datum)
@@ -511,7 +533,7 @@ class GRBInterval(object):
 
         else:
 
-            if_file = True
+            is_file = True
             f = h5py.File(name, "w")
 
         for k, v in self._data.items():
@@ -543,7 +565,7 @@ class GRBInterval(object):
 
         else:
 
-            if_file = True
+            is_file = True
             f = h5py.File(name, "r")
 
         data = []
@@ -600,7 +622,6 @@ class GRBData(object):
             self._max_n_echans = 0
             self._n_detectors.append(0)
 
-        self._n_intervals = len(intervals)
         self._name = grb_name
 
         self._z = z
@@ -608,10 +629,6 @@ class GRBData(object):
     @property
     def intervals(self):
         return self._intervals
-
-    @property
-    def n_intervals(self):
-        return self._n_intervals
 
     @property
     def n_detectors(self):
@@ -642,7 +659,7 @@ class GRBData(object):
         return cosmo.luminosity_distance(self._z).to("cm").value
 
     @classmethod
-    def from_dict(cls, grb_name, d):
+    def from_dict(cls, grb_name, d, mc_bound_limit=None):
         """
 
         construct from dictionary via
@@ -659,11 +676,16 @@ class GRBData(object):
 
         intervals = []
 
-        n_intervals = d["n_intervals"]
-        z = d["z"]
-        for i in range(n_intervals):
+        interval_ids = d["interval_ids"]
 
-            interval = GRBInterval.from_dict(d, grb_name, spectrum_number=i + 1)
+        z = d["z"]
+
+        for i in interval_ids:
+
+            # observations really low!
+            interval = GRBInterval.from_dict(
+                d, grb_name, spectrum_number=i + 1, mc_bound_limit=mc_bound_limit
+            )
 
             intervals.append(interval)
 
@@ -689,7 +711,7 @@ class GRBData(object):
 
         else:
 
-            if_file = True
+            is_file = True
             f = h5py.File(name, "r")
 
         intervals = []
@@ -736,12 +758,12 @@ class GRBData(object):
 
         else:
 
-            if_file = True
+            is_file = True
             f = h5py.File(name, "w")
 
         n_intervals = 0
 
-        for i in range(self._n_intervals):
+        for i in range(len(self.intervals)):
 
             # this will recurse down the intervals
 
@@ -771,7 +793,6 @@ class GRBData(object):
         f.attrs["n_intervals"] = n_intervals
 
         if is_file:
-
             f.close()
 
 
@@ -788,6 +809,7 @@ class DataSet(object):
 
         self._grbs: Dict[str, GRBData] = collections.OrderedDict()
         self._n_intervals = 0
+        self._n_unknown = 0
 
         n_echans = []
         n_chans = []
@@ -797,12 +819,11 @@ class DataSet(object):
         self._grb_id = {}
 
         for i, grb in enumerate(grbs):
-
             assert isinstance(grb, GRBData)
-            if grb.n_intervals > 0:
 
+            if len(grb.intervals) > 0:
                 self._grbs[grb.name] = grb
-                self._n_intervals += grb.n_intervals
+                self._n_intervals += len(grb.intervals)
                 n_echans.append(grb.max_n_echans)
                 n_chans.append(grb.max_n_chans)
                 n_dets.append(grb.max_n_detectors)
@@ -811,12 +832,15 @@ class DataSet(object):
 
                 self._n_grbs += 1
 
+            if grb.z == 0:
+                self._n_unknown += 1
+
         self._max_n_chans = max(n_chans)
         self._max_n_echans = max(n_echans)
         self._max_n_detectors = max(n_dets)
 
     @classmethod
-    def from_dict(cls, d):
+    def from_dict(cls, d, mc_bound_limit=None):
         """
         construct from a dictionary with the layout
         specified in the from_yaml function
@@ -838,14 +862,14 @@ class DataSet(object):
             # which will recurse and build things
             # from fits files
 
-            grb = GRBData.from_dict(grb_name, d2)
+            grb = GRBData.from_dict(grb_name, d2, mc_bound_limit=mc_bound_limit)
 
             grbs.append(grb)
 
         return cls(*grbs)
 
     @classmethod
-    def from_yaml(cls, file_name):
+    def from_yaml(cls, file_name, mc_bound_limit=None):
         """
 
         Construct from a yaml file that specifies
@@ -854,7 +878,9 @@ class DataSet(object):
         them to HDF5. The yaml file should look like
 
         grb_name:
-           n_intervals: 4
+           intervals:
+             - 1
+             - 2
            dir: ~/home/location
            z=1
            detectors:
@@ -881,7 +907,7 @@ class DataSet(object):
 
             # call the dict construction method
 
-        return cls.from_dict(d)
+        return cls.from_dict(d, mc_bound_limit=mc_bound_limit)
 
     @classmethod
     def from_hdf5_file(cls, file_name):
@@ -1064,11 +1090,19 @@ class DataSet(object):
         z = []
         dl = []
 
+        stan_data["N_unknown"] = self._n_unknown
+        z_mask = []
+        unknown_id = []
+
         total_number_of_channels_used = 0
 
         i = 0
+        i_z = 0
 
         for name, grb in self._grbs.items():
+
+            if grb.z == 0:
+                i_z += 1
 
             for interval in grb.intervals:
 
@@ -1123,6 +1157,13 @@ class DataSet(object):
 
                     total_number_of_channels_used += datum.n_channels_used
 
+                if grb.z == 0:
+                    z_mask.append(0)
+                    unknown_id.append(i_z)
+                else:
+                    z_mask.append(1)
+                    unknown_id.append(0)
+
                 # iterate the interval
                 i += 1
 
@@ -1152,5 +1193,8 @@ class DataSet(object):
 
         stan_data["dl"] = dl
         stan_data["z"] = z
+
+        stan_data["z_mask"] = z_mask
+        stan_data["unknown_id"] = unknown_id
 
         return stan_data

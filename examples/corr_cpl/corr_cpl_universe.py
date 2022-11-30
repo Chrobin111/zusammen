@@ -11,9 +11,7 @@ class GBM_CORR_CPL_Universe(Universe):
 
     def __init__(self, population, save_path="."):
 
-        super(GBM_CORR_CPL_Universe, self).__init__(
-            population, save_path=save_path
-        )
+        super(GBM_CORR_CPL_Universe, self).__init__(population, save_path=save_path)
 
     def _grb_wrapper(self, parameter_server, serial=False):
         return GBM_CORR_CPL_Wrapper(parameter_server, serial=serial)
@@ -25,7 +23,7 @@ class GBM_CORR_CPL_Universe(Universe):
 
         self._local_parameters["ep_start"] = self._population.ep_obs
         self._local_parameters["alpha"] = self._population.alpha
-        self._local_parameters["peak_flux"] = self._population.fluxes_latent
+        self._local_parameters["peak_flux"] = self._population.fluxes.latent
         self._local_parameters["ep_tau"] = self._population.ep_tau
         self._local_parameters["Nrest"] = self._population.nrest
         self._local_parameters["gamma"] = self._population.gamma

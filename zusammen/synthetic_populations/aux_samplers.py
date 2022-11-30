@@ -90,9 +90,9 @@ class LumSampler(popsynth.DerivedLumAuxSampler):
 
         lum = nrest * np.power(ep / 100, gamma)  # erg s^-1
 
-        tmp = np.random.normal(0, self.s_scat * lum)
+        # tmp = np.random.normal(0, self.s_scat * lum)
 
-        self._true_values = lum + tmp
+        self._true_values = lum  # + tmp
 
 
 class DerivedEpeakSampler(popsynth.AuxiliarySampler):

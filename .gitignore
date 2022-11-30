@@ -132,10 +132,13 @@ dmypy.json
 /zusammen/stan_models/*.o
 
 # hdf5
-*.h5
 *.yml
 *.rsp
+*.rsp2
 *.pha
+*.fits
+*.fit
+*.fit.gz
 
 
 # Dask
@@ -150,4 +153,34 @@ dataframes/data
 .vscode/
 
 # Simulations
+examples/data*
 examples/SynthGRB_*
+analysis/simulation/SynthGRB_*
+analysis/simulation/*/SynthGRB_*
+analysis/real_data/GRB*
+analysis/real_data/*/GRB*
+
+# Binaries
+zusammen/stan_models/analytic_test
+zusammen/stan_models/formula_test
+zusammen/stan_models/model_test
+zusammen/stan_models/pgstat_test
+zusammen/stan_models/cpl_simple_chunked
+zusammen/stan_models/cpl_simple_chunked_centered
+zusammen/stan_models/cpl_simple_chunked_combined
+zusammen/stan_models/cpl_simple_chunked_gc
+zusammen/stan_models/cpl_simple_chunked_gc_uniform
+zusammen/stan_models/cpl_simple_chunked_gc_vectorized
+zusammen/stan_models/cpl_simple_chunked_gc_cauchy
+zusammen/stan_models/cpl_simple_chunked_gc_relaxed
+zusammen/stan_models/cpl_simple_chunked_gc_relaxed_uniform
+zusammen/stan_models/cpl_simple_chunked_gc_relaxed_gamma
+zusammen/stan_models/cpl_simple_chunked_gc_relaxed_Nrest
+zusammen/stan_models/cpl_simple_chunked_gc_z
+zusammen/stan_models/cpl_simple_chunked_gc_test
+zusammen/stan_models/cpl_simple_chunked_gc_global
+zusammen/stan_models/cpl_simple_chunked_gc_global_gamma
+zusammen/stan_models/cpl_simple_chunked_gc_global_Nrest
+
+# Mac
+.DS_Store

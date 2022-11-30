@@ -1,15 +1,55 @@
 import os
-import pkg_resources
 
 import cmdstanpy
+import pkg_resources
 
 _available_models = {}
 
+# tests
+_available_models["analytic_test"] = "analytic_test.stan"
+_available_models["formula_test"] = "formula_test.stan"
+_available_models["model_test"] = "model_test.stan"
+_available_models["pgstat_test"] = "pgstat_test.stan"
+_available_models["cpl_simple_chunked_gc_test"] = "cpl_simple_chunked_gc_test.stan"
+
+# without GC
 _available_models["cpl_simple_chunked"] = "cpl_simple_chunked.stan"
+_available_models["cpl_simple_chunked_centered"] = "cpl_simple_chunked_centered.stan"
+_available_models["cpl_simple_chunked_combined"] = "cpl_simple_chunked_combined.stan"
+
+# with GC and hyperparameters
 _available_models["cpl_simple_chunked_gc"] = "cpl_simple_chunked_gc.stan"
+_available_models[
+    "cpl_simple_chunked_gc_uniform"
+] = "cpl_simple_chunked_gc_uniform.stan"
 _available_models[
     "cpl_simple_chunked_gc_vectorized"
 ] = "cpl_simple_chunked_gc_vectorized.stan"
+_available_models["cpl_simple_chunked_gc_cauchy"] = "cpl_simple_chunked_gc_cauchy.stan"
+
+# with GC and no hyperparameters
+_available_models[
+    "cpl_simple_chunked_gc_relaxed"
+] = "cpl_simple_chunked_gc_relaxed.stan"
+_available_models[
+    "cpl_simple_chunked_gc_relaxed_uniform"
+] = "cpl_simple_chunked_gc_relaxed_uniform.stan"
+_available_models[
+    "cpl_simple_chunked_gc_relaxed_gamma"
+] = "cpl_simple_chunked_gc_relaxed_gamma.stan"
+_available_models[
+    "cpl_simple_chunked_gc_relaxed_Nrest"
+] = "cpl_simple_chunked_gc_relaxed_Nrest.stan"
+_available_models["cpl_simple_chunked_gc_z"] = "cpl_simple_chunked_gc_z.stan"
+
+# with GC and global parameters
+_available_models["cpl_simple_chunked_gc_global"] = "cpl_simple_chunked_gc_global.stan"
+_available_models[
+    "cpl_simple_chunked_gc_global_gamma"
+] = "cpl_simple_chunked_gc_global_gamma.stan"
+_available_models[
+    "cpl_simple_chunked_gc_global_Nrest"
+] = "cpl_simple_chunked_gc_global_Nrest.stan"
 
 
 class StanModel(object):
@@ -22,7 +62,9 @@ class StanModel(object):
 
         self._model = None
 
-    def build_model(self, opt: bool = False, opt_exp: bool = False):
+    def build_model(
+        self, recompile: bool = False, opt: bool = False, opt_exp: bool = False
+    ):
         """
         build the stan model
 
@@ -31,6 +73,7 @@ class StanModel(object):
 
         """
 
+        compile = "force" if recompile else True
         cpp_options = dict(STAN_THREADS=True)
         stanc_options = dict()
         if opt:
@@ -41,6 +84,7 @@ class StanModel(object):
         self._model = cmdstanpy.CmdStanModel(
             stan_file=self._stan_file,
             model_name=self._name,
+            compile=compile,
             cpp_options=cpp_options,
             stanc_options=stanc_options,
         )
@@ -59,8 +103,12 @@ class StanModel(object):
 
         """
 
-        if self._model is not None:
-            os.remove(self._model.exe_file)
+        bin = self._stan_file.replace(".stan", "")
+        if os.path.exists(bin):
+            os.remove(bin)
+            print(f"Removed binary {bin}.")
+        else:
+            print(f"Binary {bin} does not exist.")
 
 
 def get_model(model_name):
