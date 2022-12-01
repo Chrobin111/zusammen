@@ -181,6 +181,7 @@ zusammen/stan_models/cpl_simple_chunked_gc_test
 zusammen/stan_models/cpl_simple_chunked_gc_global
 zusammen/stan_models/cpl_simple_chunked_gc_global_gamma
 zusammen/stan_models/cpl_simple_chunked_gc_global_Nrest
+zusammen/stan_models/cpl_simple_chunked_gc_int
 
 # Mac
 .DS_Store
