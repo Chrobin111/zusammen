@@ -57,8 +57,8 @@ fit = m.model.sample(
     iter_warmup=n_warmup,
     iter_sampling=n_sampling,
     max_treedepth=15,
-    adapt_delta=0.9,
-    # step_size=0.1,
+    adapt_delta=0.99,
+    step_size=0.1,
     show_progress=True,
     refresh=1,
 )
