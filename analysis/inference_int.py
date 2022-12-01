@@ -14,14 +14,14 @@ from zusammen import DataSet
 from zusammen.stan_models.stan_model import get_model
 
 inference_folder = "inference/"
-data_folder = "simulation/"
-data_name = "data_2_sig_5"
-# data_folder = "real_data/"
-# data_name = "data"
+# data_folder = "simulation/"
+# data_name = "data_2_sig_5"
+data_folder = "real_data/"
+data_name = "data"
 
 model_name = "cpl_simple_chunked_gc_int"
-inference_name = "simulated_int_sig_5_1000"
-# inference_name = "real_int_sig_5_1000"
+# inference_name = "simulated_int_sig_5_1000"
+inference_name = "real_int_sig_5_1000"
 
 ds = DataSet.from_hdf5_file(data_folder + data_name + ".h5")
 data = ds.to_stan_dict()
