@@ -224,140 +224,152 @@ def plot_weak_light_curve(
 
 
 def plot_light_curve(
-    model: str, data_folder: str, width: float, siunitx: bool = False, **kwargs
+    model: str,
+    data_folder: str,
+    width: float,
+    siunitx: bool = False,
+    **kwargs,
 ):
-    fig, axes = plt.subplots(
-        2, 2, sharex=True, sharey="row", figsize=(width, 0.67 * width)
-    )
-    row = 0
-    col = 0
+    fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(width, 0.33 * width))
+    grb_name_1, grb_name_2 = kwargs["grb_names"]
+    det_1, det_2 = kwargs["det_names"]
 
     if "simulated" in model:
         survey_name = kwargs["survey_name"]
-        data_name = kwargs["data_name"]
-
         survey = Survey.from_file(data_folder + survey_name + ".h5")
 
-        grb_name = "SynthGRB_5"
+        lightcurve = survey[grb_name_1].grb[det_1]["lightcurve"]
 
-        with open(data_folder + data_name + ".yml", "r") as f:
-            d = yaml.load(f, Loader=yaml.SafeLoader)
-            dets = d[grb_name]["detectors"].keys()
+        lightcurve.display_lightcurve(dt=0.5, ax=ax1, lw=1, label="Total signal")
+        lightcurve.display_source(dt=0.5, ax=ax1, lw=1, label="Source")
+        lightcurve.display_background(dt=0.5, ax=ax1, lw=1, label="Background")
 
-        for k, v in survey[grb_name].grb.items():
-            if k in dets:
-                ax = axes[row][col]
+        lc_line = ax1.lines[0]
+        cr = lc_line.get_ydata()
+        timebins = lc_line.get_xdata()
+        cr = cr[timebins >= 0]
+        timebins = timebins[timebins >= 0]
+        cr = cr[timebins <= survey[grb_name_1].grb.duration]
+        timebins = timebins[timebins <= survey[grb_name_1].grb.duration]
+        ax1.fill_between(timebins, cr, step="post", alpha=0.3, label="Selection")
 
-                lightcurve = v["lightcurve"]
+        ax1.set_xlim(-2, 10)
+        ax1.set_ylim(0)
+        if siunitx:
+            ax1.set_xlabel(r"Time $t$ [\si{\second}]")
+            ax1.set_ylabel(r"Count Rate $n$ [\si{\per\second}]")
+        ax1.legend()
+        title = f"GRB {grb_name_1.replace('SynthGRB_', '')} ("
+        if det_1.startswith("b"):
+            title += "BGO " + str(int(det_1[-1])) + ")"
+        elif det_1.startswith("n"):
+            title += "NaI " + str(int(det_1[-1])) + ")"
+        else:
+            raise Exception("Unknown detector type")
+        ax1.set_title(title)
 
-                lightcurve.display_lightcurve(
-                    dt=0.5, ax=ax, lw=1, label="Total signal"
-                )  # ,color='#25C68C')
-                lightcurve.display_source(
-                    dt=0.5, ax=ax, lw=1, label="Source"
-                )  # ,color="#A363DE")
-                lightcurve.display_background(
-                    dt=0.5, ax=ax, lw=1, label="Background"
-                )  # , color="#2C342E")
+        lightcurve = survey[grb_name_2].grb[det_2]["lightcurve"]
 
-                lc_line = ax.lines[0]
-                cr = lc_line.get_ydata()
-                timebins = lc_line.get_xdata()
-                cr = cr[timebins >= 0]
-                timebins = timebins[timebins >= 0]
-                cr = cr[timebins <= survey[grb_name].grb.duration]
-                timebins = timebins[timebins <= survey[grb_name].grb.duration]
-                ax.fill_between(timebins, cr, step="post", alpha=0.3, label="Selection")
+        lightcurve.display_lightcurve(dt=0.5, ax=ax2, lw=1, label="Total signal")
+        lightcurve.display_source(dt=0.5, ax=ax2, lw=1, label="Source")
+        lightcurve.display_background(dt=0.5, ax=ax2, lw=1, label="Background")
 
-                ax.set_xlim(-2, 10)
-                if row != 1:
-                    ax.set_ylim(0, 10000)
-                    ax.set_xlabel("")
-                else:
-                    ax.set_ylim(0, 12000)
-                    if siunitx:
-                        ax.set_xlabel(r"Time $t$ [\si{\second}]")
-                if col != 0:
-                    ax.set_ylabel("")
-                elif siunitx:
-                    ax.set_ylabel(r"Count Rate $n$ [\si{per\second}]")
-                ax.legend()
-                if k.startswith("b"):
-                    title = "BGO " + str(int(k[-1]))
-                elif k.startswith("n"):
-                    title = "NaI " + str(int(k[-1]))
-                else:
-                    raise Exception("Unknown detector type")
-                ax.set_title(title)
+        lc_line = ax2.lines[0]
+        cr = lc_line.get_ydata()
+        timebins = lc_line.get_xdata()
+        cr = cr[timebins >= 0]
+        timebins = timebins[timebins >= 0]
+        cr = cr[timebins <= survey[grb_name_2].grb.duration]
+        timebins = timebins[timebins <= survey[grb_name_2].grb.duration]
+        ax2.fill_between(timebins, cr, step="post", alpha=0.3, label="Selection")
 
-                if col < 1:
-                    col += 1
-                else:
-                    row += 1
-                    col = 0
+        ax2.set_xlim(-2, 10)
+        if siunitx:
+            ax2.set_xlabel(r"Time $t$ [\si{\second}]")
+            ax2.set_ylabel(r"")
+        ax2.legend()
+        title = f"GRB {grb_name_2.replace('SynthGRB_', '')} ("
+        if det_2.startswith("b"):
+            title += "BGO " + str(int(det_2[-1])) + ")"
+        elif det_2.startswith("n"):
+            title += "NaI " + str(int(det_2[-1])) + ")"
+        else:
+            raise Exception("Unknown detector type")
+        ax2.set_title(title)
 
     else:
-        grb_name = kwargs["grb_name"]
-        # grb_name = "GRB160509374"
-
-        dload = dict()
-        with open(data_folder + "self_sample/" + "dload.yml", "r") as f:
+        with open(data_folder + "self_sample/" + "dload.yml") as f:
             dload = yaml.load(f, Loader=yaml.SafeLoader)
-        dets = list(dload[grb_name].keys())
-        dets.sort()
 
-        for det in dets:
-            if det == "z" or det == "source_time":
-                continue
+        with open(data_folder + "grb_names.yml") as f:
+            real_names = yaml.load(f, Loader=yaml.SafeLoader)
 
-            ax = axes[row][col]
+        ts_1 = TimeSeriesBuilder.from_gbm_cspec_or_ctime(
+            det_1,
+            cspec_or_ctime_file=dload[grb_name_1][det_1]["cspec"],
+            rsp_file=dload[grb_name_1][det_1]["rsp"],
+            verbose=False,
+        )
+        lc_line = ts_1.view_lightcurve(-10, 50).gca().lines[0]
+        timebins = lc_line.get_xdata()
+        cr = lc_line.get_ydata()
+        ax1.step(timebins, cr, label="Total signal")
 
-            ts = TimeSeriesBuilder.from_gbm_cspec_or_ctime(
-                det,
-                cspec_or_ctime_file=dload[grb_name][det]["cspec"],
-                rsp_file=dload[grb_name][det]["rsp"],
-                verbose=False,
-            )
-            lc_line = ts.view_lightcurve(-10, 50).gca().lines[0]
-            timebins = lc_line.get_xdata()
-            cr = lc_line.get_ydata()
-            ax.step(timebins, cr, label="Total signal")
+        source_time = dload[grb_name_1]["source_time"]
+        cr = cr[timebins >= source_time[0]]
+        timebins = timebins[timebins >= source_time[0]]
+        cr = cr[timebins <= source_time[1]]
+        timebins = timebins[timebins <= source_time[1]]
+        ax1.fill_between(timebins, cr, step="pre", alpha=0.3, label="Selection")
 
-            source_time = dload[grb_name]["source_time"]
-            cr = cr[timebins >= source_time[0]]
-            timebins = timebins[timebins >= source_time[0]]
-            cr = cr[timebins <= source_time[1]]
-            timebins = timebins[timebins <= source_time[1]]
-            ax.fill_between(timebins, cr, step="pre", alpha=0.3, label="Selection")
+        ax1.set_xlim(-2, 40)
+        ax1.set_ylim(0)
+        if siunitx:
+            ax1.set_xlabel(r"Time $t$ [\si{\second}]")
+            ax1.set_ylabel(r"Count Rate $n$ [\si{\per\second}]")
+        title = f"{real_names[grb_name_1]} ("
+        if det_1.startswith("b"):
+            title += "BGO " + str(int(det_1[-1]) + 1) + ")"
+        elif det_1.startswith("n"):
+            title += "NaI " + str(int(det_1[-1]) + 1) + ")"
+        else:
+            raise Exception("Unknown detector type")
+        ax1.legend()
+        ax1.set_title(title)
 
-            ax.set_xlim(-2, 40)
-            if row != 1:
-                ax.set_ylim(0, 9000)
-                if siunitx:
-                    ax.set_xlabel(r"Time $t$ [\si{\second}]")
-            else:
-                ax.set_ylim(0, 10000)
-                ax.set_xlabel("")
-            if col != 0:
-                ax.set_ylabel("")
-            elif siunitx:
-                ax.set_ylabel(r"Count Rate $n$ [\si{per\second}]")
-            if det.startswith("b"):
-                title = "BGO " + str(int(det[-1]) + 1)
-            elif det.startswith("n"):
-                title = "NaI " + str(int(det[-1]) + 1)
-            else:
-                raise Exception("Unknown detector type")
-            ax.legend()
-            ax.set_title(title)
+        ts_2 = TimeSeriesBuilder.from_gbm_cspec_or_ctime(
+            det_2,
+            cspec_or_ctime_file=dload[grb_name_2][det_2]["cspec"],
+            rsp_file=dload[grb_name_2][det_2]["rsp"],
+            verbose=False,
+        )
+        lc_line = ts_2.view_lightcurve(-10, 50).gca().lines[0]
+        timebins = lc_line.get_xdata()
+        cr = lc_line.get_ydata()
+        ax2.step(timebins, cr, label="Total signal")
 
-            if col < 1:
-                col += 1
-            else:
-                row += 1
-                col = 0
+        source_time = dload[grb_name_2]["source_time"]
+        cr = cr[timebins >= source_time[0]]
+        timebins = timebins[timebins >= source_time[0]]
+        cr = cr[timebins <= source_time[1]]
+        timebins = timebins[timebins <= source_time[1]]
+        ax2.fill_between(timebins, cr, step="pre", alpha=0.3, label="Selection")
 
-    fig.align_ylabels(axes)
+        ax2.set_xlim(-2, 40)
+        if siunitx:
+            ax2.set_xlabel(r"Time $t$ [\si{\second}]")
+            ax2.set_ylabel(r"")
+        title = f"{real_names[grb_name_2]} ("
+        if det_2.startswith("b"):
+            title += "BGO " + str(int(det_2[-1]) + 1) + ")"
+        elif det_2.startswith("n"):
+            title += "NaI " + str(int(det_2[-1]) + 1) + ")"
+        else:
+            raise Exception("Unknown detector type")
+        ax2.legend()
+        ax2.set_title(title)
+
+    fig.align_ylabels([ax1, ax2])
     fig.tight_layout()
 
     return fig
@@ -365,6 +377,7 @@ def plot_light_curve(
 
 def plot_ppc(
     model: str,
+    data_folder: str,
     ds,
     data: dict,
     res: av.InferenceData,
@@ -384,23 +397,32 @@ def plot_ppc(
         grb_2 = 13
         interval_2 = 0
 
-        ax[0].set_title(list(ds._grbs.keys())[grb_1])
-        ax[1].set_title(list(ds._grbs.keys())[grb_2])
+        with open(data_folder + "grb_names.yml") as f:
+            real_names = yaml.load(f, Loader=yaml.SafeLoader)
+
+        ax[0].set_title(real_names[list(ds._grbs.keys())[grb_1]])
+        ax[1].set_title(real_names[list(ds._grbs.keys())[grb_2]])
     else:
         grb_1 = 4
         interval_1 = 0
         grb_2 = 7
         interval_2 = 0
 
+        ax[0].set_title(f"GRB {grb_1}")
+        ax[1].set_title(f"GRB {grb_2}")
+
     cenergies_1, ppc_counts_1 = p.ppc(
         chain, draws, interval_1, detector, grb=grb_1, interval_in_grb=True
     )
     _, ppc_1s_1, ppc_2s_1 = PPC.ppc_summary(ppc_counts_1)
 
+    obs_mask = data["mask"][
+        np.where(data["grb_id"] == grb_1 + 1)[0][interval_1], detector
+    ]
     ax[0].stairs(
         data["observed_counts"][
             np.where(data["grb_id"] == grb_1 + 1)[0][interval_1], detector
-        ],
+        ][obs_mask > 0],
         cenergies_1,
         color="#dd8452",
     )
@@ -423,6 +445,7 @@ def plot_ppc(
     if siunitx:
         ax[0].set_xlabel(r"Photon Energy $E_\gamma$ [\si{\kilo\electronvolt}]")
         ax[0].set_ylabel(r"Count Rate $n$ [\si{\per\second}]")
+    ax[0].set_xlim(cenergies_1[0], cenergies_1[-1])
     ax[0].loglog()
 
     cenergies_2, ppc_counts_2 = p.ppc(
@@ -430,10 +453,13 @@ def plot_ppc(
     )
     _, ppc_1s_2, ppc_2s_2 = PPC.ppc_summary(ppc_counts_2)
 
+    obs_mask = data["mask"][
+        np.where(data["grb_id"] == grb_2 + 1)[0][interval_2], detector
+    ]
     ax[1].stairs(
         data["observed_counts"][
             np.where(data["grb_id"] == grb_2 + 1)[0][interval_2], detector
-        ],
+        ][obs_mask > 0],
         cenergies_2,
         color="#dd8452",
     )
@@ -455,6 +481,7 @@ def plot_ppc(
     )
     if siunitx:
         ax[1].set_xlabel(r"Photon Energy $E_\gamma$ [\si{\kilo\electronvolt}]")
+    ax[1].set_xlim(cenergies_2[0], cenergies_2[-1])
     ax[1].loglog()
 
     fig.align_ylabels(ax)
@@ -469,7 +496,7 @@ def plot_corner(
     if marginals:
         fig, axes = plt.subplots(4, 4, figsize=(width, width))
     else:
-        fig, axes = plt.subplots(3, 3, figsize=(0.75 * width, 0.75 * width))
+        fig, axes = plt.subplots(3, 3, figsize=(0.67 * width, 0.67 * width))
 
     vars = ["alpha", "log_ec", "log_Nrest", "gamma"]
     if "global" in model:
@@ -488,6 +515,10 @@ def plot_corner(
             "contour_kwargs": {"cmap": "rocket_r", "colors": None},
         },
     )
+
+    for axs in axes:
+        for ax in axs:
+            ax.grid(True)
 
     if marginals:
         axes[-1][0].set_xlabel(r"$\alpha$")
@@ -514,42 +545,75 @@ def plot_corner(
     return fig
 
 
-def plot_violin(model: str, res, width: float, height: float, ratio: float = 0.6):
+def plot_violin(
+    model: str,
+    data_folder: str,
+    ds,
+    res: av.InferenceData,
+    width: float,
+    height: float,
+    ratio: float = 0.5,
+    **kwargs,
+):
     assert "global" not in model, "Global model is not supported"
 
-    fig_gamma, ax_gamma = plt.subplots(
-        1, 1, sharex=True, sharey=True, figsize=(ratio * width, ratio * height)
-    )
+    fig_gamma, ax_gamma = plt.subplots(1, 1, figsize=(ratio * width, ratio * height))
     sns.violinplot(data=res.posterior.gamma[0], ax=ax_gamma)
+
     if model.startswith("real"):
-        grb_names = [i[3:] for i in ds._grbs.keys()]
-        ax_gamma.set_xticklabels(grb_names)  # , rotation=-30)
+        with open(data_folder + "grb_names.yml") as f:
+            real_names = yaml.load(f, Loader=yaml.SafeLoader)
+        grb_names = [real_names[i][3:] for i in ds._grbs.keys()]
+        ax_gamma.set_xticklabels(grb_names)
         fig_gamma.autofmt_xdate()
-        ax_gamma.set_ylim(1, 7.5)
     else:
-        ax_gamma.set_ylim(1.3, 1.6)
+        ax_gamma.plot([-1, len(res.posterior.gamma[0, 0] + 1)], [1.5, 1.5], "--")
+
+        survey_name = kwargs["survey_name"]
+        survey = Survey.from_file(data_folder + survey_name + ".h5")
+        grb_names = []
+        for i in range(len(survey)):
+            if f"SynthGRB_{i}" not in list(ds._grbs.keys()):
+                continue
+            grb_names.append(f"GRB {i}")
+        ax_gamma.set_xticklabels(grb_names)
+        fig_gamma.autofmt_xdate()
+
+    ax_gamma.set_xlim(-0.5, len(res.posterior.gamma[0, 0]) - 0.5)
     ax_gamma.set_ylabel(r"$\gamma$")
 
-    if "relaxed" in model:
+    if "int" in model:
         ax_gamma.set_ylabel("")
-        ax_gamma.set_yticklabels("")
 
     fig_Nrest, ax_Nrest = plt.subplots(
         1, 1, sharex=True, sharey=True, figsize=(ratio * width, ratio * height)
     )
     sns.violinplot(data=res.posterior.log_Nrest[0], ax=ax_Nrest)
+
     if model.startswith("real"):
-        grb_names = [i[3:] for i in ds._grbs.keys()]
-        ax_Nrest.set_xticklabels(grb_names)  # , rotation=-30)
+        with open(data_folder + "grb_names.yml") as f:
+            real_names = yaml.load(f, Loader=yaml.SafeLoader)
+        grb_names = [real_names[i][3:] for i in ds._grbs.keys()]
+        ax_Nrest.set_xticklabels(grb_names)
         fig_Nrest.autofmt_xdate()
-        ax_Nrest.set_ylim(45.5, 52)
     else:
-        ax_Nrest.set_ylim(51.95, 52.2)
+        ax_Nrest.plot([-1, len(res.posterior.log_Nrest[0, 0] + 1)], [52, 52], "--")
+
+        survey_name = kwargs["survey_name"]
+        survey = Survey.from_file(data_folder + survey_name + ".h5")
+        grb_names = []
+        for i in range(len(survey)):
+            if f"SynthGRB_{i}" not in list(ds._grbs.keys()):
+                continue
+            grb_names.append(f"GRB {i}")
+        ax_Nrest.set_xticklabels(grb_names)
+        fig_Nrest.autofmt_xdate()
+
+    ax_Nrest.set_xlim(-0.5, len(res.posterior.log_Nrest[0, 0]) - 0.5)
     ax_Nrest.set_ylabel(r"$\log N_\mathrm{rest}$")
 
-    if "relaxed" in model:
+    if "int" in model:
         ax_Nrest.set_ylabel("")
-        ax_Nrest.set_yticklabels("")
 
     return fig_gamma, fig_Nrest
 
@@ -558,17 +622,15 @@ def plot_trace(
     model: str,
     res,
     width: float,
+    divergences: str = "False",
     vars: list = ["alpha", "log_ec", "gamma", "log_Nrest"],
 ):
-    if "global" in model or "relaxed" in model:
-        ratio = 0.5
-    else:
-        ratio = 1
+    ratio = 0.5
 
     rows = len(vars)
     fig, axes = plt.subplots(rows, 2, figsize=(ratio * width, 0.8 * width))
 
-    av.plot_trace(res, var_names=vars, divergences=False, axes=axes)
+    av.plot_trace(res, var_names=vars, divergences=divergences, axes=axes)
 
     for i in np.array(axes).T[0]:
         i.remove()
@@ -590,11 +652,27 @@ def plot_gc(model: str, data: dict, res: av.InferenceData, width: float, height:
     def gc(log_epeak):
         return 52 + 1.5 * (log_epeak - 2)
 
-    if "global" in model:
-        ratiow = 0.8
-    else:
-        ratiow = 0.5
+    ratiow = 0.5
+    fig, ax = plt.subplots(1, 1, figsize=(ratiow * width, height / 2))
 
+    cmaps_grbs = [
+        "Purples",
+        "Blues",
+        "Greens",
+        "Oranges",
+        "Reds",
+        "YlOrBr",
+        "OrRd",
+        "PuRd",
+        "RdPu",
+        "BuPu",
+        "GnBu",
+        "PuBu",
+        "YlGnBu",
+        "PuBuGn",
+        "BuGn",
+    ]
+    cmaps = [cmaps_grbs[data["grb_id"][i] - 1] for i in range(data["N_intervals"])]
     log_epeak = np.array(res.posterior.log_epeak.stack(sample=["chain", "draw"]))
     log_energy_flux = np.array(
         res.posterior.log_energy_flux.stack(sample=["chain", "draw"])
@@ -603,18 +681,29 @@ def plot_gc(model: str, data: dict, res: av.InferenceData, width: float, height:
     log_epeak_true = np.log10(1 + np.array(data["z"])) + log_epeak.T
     log_L = np.log10(4 * np.pi * np.square(data["dl"])) + log_energy_flux.T
 
-    gc_data = pd.DataFrame(
-        {
-            "log_epeak": log_epeak_true[0:1000].flatten(),
-            "log_L": log_L[0:1000].flatten(),
-            "grb": np.array(
-                [data["grb_id"][i // 1000] for i in range(1000 * data["N_intervals"])]
-            ),
-        }
-    )
+    # gc_data = pd.DataFrame(
+    #     {
+    #         "log_epeak": log_epeak_true[0:1000].T.flatten(),
+    #         "log_L": log_L[0:1000].T.flatten(),
+    #         "grb": np.array(
+    #             [data["grb_id"][i // 1000] for i in range(1000 * data["N_intervals"])]
+    #         ),
+    #     }
+    # )
 
-    fig, ax = plt.subplots(1, 1, figsize=(ratiow * width, height / 2))
-    sns.kdeplot(gc_data, x="log_epeak", y="log_L", ax=ax, fill=True, cmap="rocket_r")
+    # sns.kdeplot(
+    #     gc_data, x="log_epeak", y="log_L", ax=ax, fill=True, hue="grb", n_levels=5
+    # )
+
+    for ep, L, cmap in zip(log_epeak_true.T, log_L.T, cmaps):
+        av.plot_kde(
+            ep,
+            L,
+            contour_kwargs={"linewidths": 0, "levels": 5},
+            contourf_kwargs={"cmap": cmap, "levels": 5},
+        )
+
+    ax.grid(True)
 
     if "real" in model:
         if "global" in model:
@@ -630,9 +719,11 @@ def plot_gc(model: str, data: dict, res: av.InferenceData, width: float, height:
     ax.set_xlabel(r"$\log E_\mathrm{peak}$")
     ax.set_ylabel(r"$\log L$")
 
-    if "relaxed" in model:
+    if "int" in model or "global" in model:
         ax.set_ylabel("")
         ax.set_yticklabels("")
+
+    # ax.get_legend().remove()
 
     return fig
 
@@ -672,6 +763,9 @@ def plot_gc_kde(model: str, res: av.InferenceData, width: float):
     ax[0, 0].set_yticks([])
     ax[1, 1].set_xticks([])
     ax[1, 1].set_yticks([])
+
+    ax[1, 0].grid(True)
+
     if "global" in model:
         ax[1, 0].set_xlabel(r"$\log N_\mathrm{rest}$")
         ax[1, 0].set_ylabel(r"$\gamma$")

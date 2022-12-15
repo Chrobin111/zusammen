@@ -29,6 +29,7 @@ class PPC:
         self.exposure = data["exposure"]
         self.N_chan = data["N_chan"]
         self.N_echan = data["N_echan"]
+        self.mask = np.where(data["mask"] > 0, True, False)
 
         for id in range(self.N_intervals):
             self.alpha[id] = res.posterior.alpha.values[:, :, id]
@@ -81,6 +82,20 @@ class PPC:
             self.cbounds_lo[interval_final, detector],
             self.cbounds_hi[interval_final, detector, -1],
         )
+
+        channels = sum(self.mask[interval_final, detector] > 0)
+        if channels == len(self.cbounds_lo[interval_final, detector]) + 1:
+            cenergies = np.append(
+                self.cbounds_lo[interval_final, detector],
+                self.cbounds_hi[interval_final, detector, -1],
+            )
+        else:
+            cenergies = np.append(
+                self.cbounds_lo[interval_final, detector][
+                    self.mask[interval_final, detector] > 0
+                ],
+                self.cbounds_hi[interval_final, detector, channels],
+            )
 
         rng = np.random.default_rng()
         rand = rng.choice(self.draws, size=draws, replace=False)
@@ -168,7 +183,8 @@ class PPC:
             )
 
         ppc_sampled_counts = np.random.poisson(
-            ppc_expected_model_counts + ppc_expected_background_counts
+            ppc_expected_model_counts.T[self.mask[interval_final, detector]]
+            + ppc_expected_background_counts.T[self.mask[interval_final, detector]]
         )
 
         return cenergies, ppc_sampled_counts
@@ -176,10 +192,10 @@ class PPC:
     @staticmethod
     def ppc_summary(ppc_sampled_counts):
         ppc_sampled_counts_mu = np.mean(ppc_sampled_counts, axis=0)
-        ppc_sampled_counts_hdi_1s = np.zeros((2, ppc_sampled_counts.shape[1]))
-        ppc_sampled_counts_hdi_2s = np.zeros((2, ppc_sampled_counts.shape[1]))
+        ppc_sampled_counts_hdi_1s = np.zeros((2, ppc_sampled_counts.shape[0]))
+        ppc_sampled_counts_hdi_2s = np.zeros((2, ppc_sampled_counts.shape[0]))
 
-        for i, counts in enumerate(ppc_sampled_counts.T):
+        for i, counts in enumerate(ppc_sampled_counts):
             ppc_sampled_counts_hdi_1s.T[i] = av.hdi(counts, 0.6828)
             ppc_sampled_counts_hdi_2s.T[i] = av.hdi(counts, 0.9545)
 
